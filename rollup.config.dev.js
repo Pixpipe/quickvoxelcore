@@ -10,6 +10,7 @@ import nodeResolve from 'rollup-plugin-node-resolve';
 //import bundleWorker from 'rollup-plugin-bundle-worker';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
+import glsl from 'rollup-plugin-glsl';
 
 
 export default [
@@ -29,7 +30,16 @@ export default [
       commonjs(),
       //bundleWorker(),
       globals(),
-      builtins()
+      builtins(),
+
+      glsl({
+        // By default, everything gets included
+        include: 'src/shaders/*.glsl',
+        // Undefined by default
+        //exclude: ['**/index.html'],
+        // Source maps are on by default
+        //sourceMap: false
+      })
     ]
   }
 ];
