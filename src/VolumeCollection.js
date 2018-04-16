@@ -66,7 +66,7 @@ class VolumeCollection {
    * @param {Volume} volume - a volumetric object
    */
   _addToCollection (volume) {
-    let id = volume.
+    let id = volume.getId()
     this._volume[ id ] = volume;
     this._callEvent( 'volumeAdded', [volume] );
   }
@@ -105,16 +105,21 @@ class VolumeCollection {
     urlArrBuff.on("ready", function(){
       let arrBuff = this.getOutput();
       let generic3DDecoder = new pixpipe.Image3DGenericDecoderAlt();
-      let img3D = generic3DDecoder.getOutput();
+      generic3DDecoder.addInput( arrBuff )
+      generic3DDecoder.update()
+      let img3D = generic3DDecoder.getOutput()
 
       if( img3D ){
+        console.log( img3D ); 
         let id = that._generateID( urlArrBuff.getMetadata("filenames")[0] );
         let volume = new Volume( id, img3D );
-        that._addToCollection( volume );
+        that._addToCollection( volume )
       }else{
-        this._callEvent( 'errorAddingVolume', [url] );
+        that._callEvent( 'errorAddingVolume', [url] );
       }
     });
+
+    urlArrBuff.update()
   }
 
 
@@ -123,7 +128,7 @@ class VolumeCollection {
    * @return {[type]} [description]
    */
   getVolumeIds () {
-    return Object.keys( this._volume );
+    return Object.keys( this._volume )
   }
 
 
@@ -134,9 +139,24 @@ class VolumeCollection {
    */
   getVolume (id) {
     if( id in this._volume ){
-      return this._volume[ id ];
+      return this._volume[ id ]
     }else{
       return null;
+    }
+  }
+
+
+  /**
+   * Remove a volume fron the collection. If succesful, the event "volumeRemoved" is called
+   * with the id of the volume in argument
+   * @param  {String} id - id of the volume to remove
+   */
+  removeVolume (id) {
+    if( id in this._volume ){
+      delete this._volume[ id ]
+      this._callEvent( "volumeRemoved", [id] )
+    }else{
+      console.warn("The volume " + id + " cannot be removed because it does not exist.");
     }
   }
 

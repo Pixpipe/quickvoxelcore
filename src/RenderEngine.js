@@ -23,9 +23,14 @@ class RenderEngine {
     this._cameras = {
       main: this._initMainCamera(),
     }
-    this._emptyTexture3D = this._initEmpty3dTexture();
-    this._shaderMaterial = this._initShaderMaterial();
-    this._planeSystem = this._initOrthoPlaneSystem();
+    this._emptyTexture3D = this._initEmpty3dTexture()
+    this._shaderMaterial = this._initShaderMaterial()
+    this._planeSystem = this._initOrthoPlaneSystem()
+
+    this._mountedVolumes = [
+      null, // primary volume
+      null  // secondary volume
+    ]
 
     this._engine.runRenderLoop(function () {
       that._scene.render();
@@ -73,16 +78,40 @@ class RenderEngine {
       },
       {
         attributes: ["position", "normal", "uv"],
-        uniforms: ["world", "worldView", "worldViewProjection", "transfoMat", "texture3D", "textureReady"]
+        uniforms: ["world", "worldView", "worldViewProjection", "blendMethod",
+          "vol_0_texture3D", "vol_0_transfoMat", "vol_0_timeVal", "vol_0_timeSize", "vol_0_textureReady",
+          "vol_1_texture3D", "vol_1_transfoMat", "vol_1_timeVal", "vol_1_timeSize", "vol_1_textureReady"
+        ]
       });
 
     // setting some default values
-    shaderMaterial.setInt("textureReady", 0);
-    shaderMaterial.setInt("timeVal", 0);
-    shaderMaterial.setInt("timeSize", 1);
-    shaderMaterial.setTexture("texture3D", this._emptyTexture3D);
+    shaderMaterial.setInt( "blendMethod", 0 )
+    this._initFakeTexture( 0, shaderMaterial )
+    this._initFakeTexture( 1, shaderMaterial )
 
     return shaderMaterial;
+  }
+
+
+  /**
+   * Change the blending method. Note that this matters only when 2 textures are displayed
+   * @param {Number} m - method of blending
+   */
+  setBlendMethod (m) {
+    this._shaderMaterial.setInt( "blendMethod", m )
+  }
+
+  /**
+   * Initialize the texture data relative to a single texture
+   * @param  {Number} n - 0 for primary, 1 for secondary
+   * @param  {BABYLON.ShaderMaterial} shaderMaterial - the shader material to update
+   */
+  _initFakeTexture (n, shaderMaterial) {
+    shaderMaterial.setTexture( "vol_" + n + "_texture3D", this._emptyTexture3D )
+    shaderMaterial.setMatrix( "vol_" + n + "_transfoMat", BABYLON.Matrix.Identity() )
+    shaderMaterial.setInt( "vol_" + n + "_timeVal", 0 )
+    shaderMaterial.setInt( "vol_" + n + "_timeSize", 0 )
+    shaderMaterial.setInt( "vol_" + n + "_textureReady", 0 )
   }
 
 
@@ -203,6 +232,96 @@ class RenderEngine {
    */
   getScene () {
     return this._scene;
+  }
+
+
+  /**
+   * Mount a volume on the redering engine. This means the 3D texture attached to
+   * the given volume will be shown
+   * @param  {Number} n - the index of the slot to mount the volume on (most likely 0 or 1)
+   * @param  {Volume} volume - the volume to mount
+   */
+  mountVolumeN (n, volume) {
+    if( n>=0 && n < this._mountedVolumes.length ){
+      this._mountedVolumes[n] = volume;
+      this._shaderMaterial.setTexture( "vol_" + n + "_texture3D", volume.getTexture3D() )
+      this._shaderMaterial.setMatrix( "vol_" + n + "_transfoMat", volume.getMatrix("v2t") )
+      this._shaderMaterial.setInt( "vol_" + n + "_timeVal", 0 )
+      this._shaderMaterial.setInt( "vol_" + n + "_timeSize", volume.getTimeLength() )
+      this._shaderMaterial.setInt( "vol_" + n + "_textureReady", 1 )
+    }else{
+      console.warn('the index of the volume to mount is out of range.')
+    }
+  }
+
+
+  /**
+   * Mounts a volume in the first slot available. Will do nothing if no slot is free.
+   * @param  {Volume} volume - the volume to mount
+   * @return {Boolean} true if found an ampty slot to mount, false if could not mount it
+   */
+  mountVolumeOnFirstEmptySlot (volume) {
+    let emptySlotIndex = this._mountedVolumes.indexOf( null )
+    let isMountable = emptySlotIndex >= 0
+    if (isMountable) {
+      this.mountVolumeN( emptySlotIndex, volume )
+    }
+
+    return isMountable
+  }
+
+
+  /**
+   * Unmount the volume that is suposedly mounted on the slot N. this means the
+   * texture attached to the volume on slot N will no longer be visible.
+   * @param  {[type]} n [description]
+   */
+  unmountVolumeN (n) {
+    if( n>0 && n < this._mountedVolumes.length ){
+      this._mountedVolumes[n] = null
+      this._initFakeTexture (n, this._shaderMaterial)
+    }else{
+      console.warn('the index of the volume to unmount is out of range.')
+    }
+  }
+
+
+  /**
+   * Get the total number of volume slot in the reder engine (taken of not)
+   * @return {Number}
+   */
+  getNumberOfVolumeSlots () {
+    return this._mountedVolumes.length
+  }
+
+
+  /**
+   * Get if the Nth volume slot is already taken or not.
+   * @param  {Number}  n - index of the slot
+   * @return {Boolean} true if already taken (or out of range), false if free
+   */
+  isSlotTakenN (n) {
+    if( n>0 && n < this._mountedVolumes.length ){
+      return ( !!this._mountedVolumes[n] )
+    }else{
+      console.warn('the index of the slot is out of range.')
+    }
+    return true;
+  }
+
+
+  /**
+   * Look if the volume with the given id is mounted in a slot
+   * @param  {String} id - id of the volume to look for
+   * @return {Number} index of the slot where the volume is mounted, or -1 if not mounted
+   */
+  getSlotIndexFromVolumeId (id) {
+    for(let i=0; i<this._mountedVolumes.length; i++){
+      if( this._mountedVolumes[i].getId() === id )
+        return i
+    }
+
+    return -1;
   }
 
 

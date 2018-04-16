@@ -35,6 +35,6 @@
   },
   "dependencies": {
     "babylonjs": "^3.2.0-beta.5",
-    "pixpipe": "^0.1.2"
+    "pixpipe": "^0.1.3"
   }
 }

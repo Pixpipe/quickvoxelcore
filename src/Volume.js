@@ -9,7 +9,7 @@ class Volume {
    */
   constructor (id, image3D) {
     this._id = id
-    this._image3D = image3D;
+    this._image3D = image3D
     this._texture3D = null
 
     this._transfoMatrices = {
@@ -27,6 +27,7 @@ class Volume {
    * @return {[type]} [description]
    */
   _computeV2Tmatrices(){
+    let img3D = this._image3D
     // matrices in Pixpipe are inherited from glMatrix, thus are column major
     let pixpipe_SwapMat = img3D.getVoxelCoordinatesSwapMatrix( false, true );
     let pixpipe_V2W = img3D.getTransformMatrix('v2w') ;
@@ -92,8 +93,8 @@ class Volume {
       bjsScene,
       false, // generate mipmaps
       false, // invertY
-      //BABYLON.Texture.NEAREST_SAMPLINGMODE
-      BABYLON.Texture.TRILINEAR_SAMPLINGMODE
+      BABYLON.Texture.NEAREST_SAMPLINGMODE
+      //BABYLON.Texture.TRILINEAR_SAMPLINGMODE
     )
   }
 
@@ -123,6 +124,41 @@ class Volume {
   getImage3D () {
     return this._image3D;
   }
+
+
+  /**
+   * Get the transformation matrix with the given name
+   * @param  {String} name - name of the transform (most likely "v2t" or "v2t_center")
+   * @return {BABYLON.Matrix} the matrix
+   */
+  getMatrix (name) {
+    if (name in this._transfoMatrices) {
+      return this._transfoMatrices[name]
+    }else{
+      return null;
+    }
+  }
+
+
+  /**
+   * Get a list of all available matrices for this volume, as strings
+   * @return {Array}
+   */
+  getAvaialableMatrices () {
+    return Object.keys( this._transfoMatrices )
+  }
+
+
+  /**
+   * Get the number of time samples. fMRI (or diffusion) will have more than one
+   * while structural MRI will usually have only one.
+   * @return {Number}
+   */
+  getTimeLength () {
+    return this._image3D.getTimeLength()
+  }
+
+
 
 }
 
