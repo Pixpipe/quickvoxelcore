@@ -144,6 +144,7 @@ class Volume {
 
   _computeV2Tmatrices(){
     let img3D = this._image3D
+    let centerVoxel = img3D.getPositionWorldToVoxel({x:0, y:0, z:0}, false)
 
     let pixpipe_w2vSwappedMatrix = img3D.getW2VMatrixSwapped()
 
@@ -157,21 +158,26 @@ class Volume {
       0, 0, 0, 1
     )
 
-    let w2vFlipedX = w2v.multiply(flipX)
-
+    /*
     // the purpose of the scaling mat is to switch from unit texture dimensions
     // to world dimensions
     let scalingMat = new BABYLON.Matrix.FromValues(
-      1/img3D.getDimensionSize("k"), 0, 0, 0,
+      1/img3D.getDimensionSize("i"), 0, 0, 0,
       0, 1/img3D.getDimensionSize("j"), 0, 0,
-      0, 0, 1/img3D.getDimensionSize("i"), 0,
+      0, 0, 1/img3D.getDimensionSize("k"), 0,
       0, 0, 0, 1
     )
+    */
 
+    let scalingMat = new BABYLON.Matrix.FromValues(
+      1/img3D.getDimensionSize("x"), 0,  0,  0,
+      0,  1/img3D.getDimensionSize("y"), 0,  0,
+      0,  0,  1/img3D.getDimensionSize("z"), 0,
+      0,  0,  0,  1
+    )
 
-    // for whatever reason, MNI space is flipped on X compared to WebGL.
-    // No big deal, it's probably just texture indexing convention.
-
+    // the texture must be addressed as [k, j, i], which is the opposite of how
+    // Pixpipe does, so we just reverse the dimensionality in the transform
     let reverseDimensionality = new BABYLON.Matrix.FromValues(
       0, 0, 1, 0,
       0, 1, 0, 0,
@@ -179,35 +185,19 @@ class Volume {
       0, 0, 0, 1
     )
 
+    let w2v_scaled = w2v.multiply( scalingMat )
+
+    // the X (left to right) axis is fliped, so we unflip it
+    let w2v_scaled_flipedX = w2v_scaled.multiply(flipX); // ok
+
     /*
-    // baby
-    let swap = new BABYLON.Matrix.FromValues(
-      0, 0, 1, 0,
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 0, 1
-    )
+    w2v_scaled_flipedX.m[3] /= img3D.getDimensionSize("x")
+    w2v_scaled_flipedX.m[7] /= img3D.getDimensionSize("y")
+    w2v_scaled_flipedX.m[11] /= img3D.getDimensionSize("z")
     */
 
-
-    // structural
-    let swap = new BABYLON.Matrix.FromValues(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
-    )
-
-
-
-
-
-    // with swap AND reverseDimensionality
-    //let transfoMat = swap.multiply( reverseDimensionality ).multiply( w2v ); // works ok for structural.nii
-    //let transfoMat = reverseDimensionality.multiply( swap ).multiply( w2v ); // also works for structural.nii
-
     // with JUST reverseDimensionality
-    let transfoMat = reverseDimensionality.multiply( w2vFlipedX )
+    let transfoMat = reverseDimensionality.multiply( w2v_scaled_flipedX )
 
     //let transfoMat = flipX.multiply( reverseDimensionality ).multiply( w2v );
     //let transfoMat = reverseDimensionality.multiply( flipX ).multiply( w2v );
@@ -218,9 +208,11 @@ class Volume {
     transfoMat.m[11] /= img3D.getDimensionSize("k");
     */
 
-    transfoMat.m[3] = 0.5
-    transfoMat.m[7] = 0.5
-    transfoMat.m[11] = 0.5
+
+    transfoMat.m[3] = centerVoxel.k / img3D.getDimensionSize("k")
+    transfoMat.m[7] = centerVoxel.j / img3D.getDimensionSize("j")
+    transfoMat.m[11] =  centerVoxel.i / img3D.getDimensionSize("i")
+
 
     //transfoMat = w2v.multiply( flipper );
 
@@ -259,8 +251,8 @@ class Volume {
       bjsScene,
       false, // generate mipmaps
       false, // invertY
-      BABYLON.Texture.NEAREST_SAMPLINGMODE
-      //BABYLON.Texture.TRILINEAR_SAMPLINGMODE
+      //BABYLON.Texture.NEAREST_SAMPLINGMODE
+      BABYLON.Texture.TRILINEAR_SAMPLINGMODE
     )
   }
 
