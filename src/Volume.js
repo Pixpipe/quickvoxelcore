@@ -26,7 +26,7 @@ class Volume {
    * world coordinates display
    * @return {[type]} [description]
    */
-  _computeV2Tmatrices(){
+  _computeV2Tmatrices_ORIG(){
     let img3D = this._image3D
     // matrices in Pixpipe are inherited from glMatrix, thus are column major
     let pixpipe_SwapMat = img3D.getVoxelCoordinatesSwapMatrix( false, true );
@@ -71,6 +71,172 @@ class Volume {
     this._transfoMatrices.v2t_center.m[7] = 0.5;
     this._transfoMatrices.v2t_center.m[11] = 0.5;
   }
+
+
+
+
+
+
+  // ok but only
+  _computeV2Tmatrices_OK(){
+    let img3D = this._image3D
+    // matrices in Pixpipe are inherited from glMatrix, thus are column major
+    let pixpipe_w2v = img3D.getTransformMatrix('w2v') ;
+    let pixpipe_SwapMat = img3D.getVoxelCoordinatesSwapMatrix( false, true );
+
+    // whereas the matrices in babylonjs are row major
+    let swapMatrix = BABYLON.Matrix.FromArray( pixpipe_SwapMat ).transpose();
+    /*
+    let swapMatrix = new BABYLON.Matrix.FromValues(
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 0,
+      0, 0, 0, 1
+    )*/
+    let w2v = BABYLON.Matrix.FromArray( pixpipe_w2v ).transpose();
+
+    // the purpose of the scaling mat is to switch from unit texture dimensions
+    // to world dimensions
+    let scalingMat = new BABYLON.Matrix.FromValues(
+      1/img3D.getDimensionSize("k"), 0, 0, 1,
+      0, 1/img3D.getDimensionSize("j"), 0, 1,
+      0, 0, 1/img3D.getDimensionSize("i"), 1,
+      0, 0, 0, 1
+    )
+
+
+    // for whatever reason, MNI space is flipped on X compared to WebGL.
+    // No big deal, it's probably just texture indexing convention.
+    let flipper = new BABYLON.Matrix.FromValues(
+      -1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    )
+
+
+    // the swapMatrix is identity 99% of the time. Still, sometimes a NIfTI file
+    // is badly encoded and does not respect the NIfTI spec
+    //scalingMat = scalingMat.multiply( swapMatrix );
+
+    let transfoMat = w2v.multiply( scalingMat );
+
+    transfoMat.m[3] /= img3D.getDimensionSize("k");
+    transfoMat.m[7] /= img3D.getDimensionSize("j");
+    transfoMat.m[11] /= img3D.getDimensionSize("i");
+
+    this._transfoMatrices.v2t = transfoMat//.multiply( flipper )
+
+    // sometimes, one of the offset (or more) is zero, which makes no
+    // sens in this brain context (weither it's Talairach or MNI space).
+    // Then, we arbitrarily set the origin at the center of the volume.
+    // In this case, the world origin is no longer valid but we still
+    // keep relative size ok.
+    /*
+    this._transfoMatrices.v2t_center = this._transfoMatrices.v2t.clone();
+    this._transfoMatrices.v2t_center.m[3] = 0.5;
+    this._transfoMatrices.v2t_center.m[7] = 0.5;
+    this._transfoMatrices.v2t_center.m[11] = 0.5;
+    */
+  }
+
+
+
+  _computeV2Tmatrices(){
+    let img3D = this._image3D
+
+    let pixpipe_w2vSwappedMatrix = img3D.getW2VMatrixSwapped()
+
+    let w2v = BABYLON.Matrix.FromArray( pixpipe_w2vSwappedMatrix ).transpose()
+
+    // structural
+    let flipX = new BABYLON.Matrix.FromValues(
+      -1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    )
+
+    let w2vFlipedX = w2v.multiply(flipX)
+
+    // the purpose of the scaling mat is to switch from unit texture dimensions
+    // to world dimensions
+    let scalingMat = new BABYLON.Matrix.FromValues(
+      1/img3D.getDimensionSize("k"), 0, 0, 0,
+      0, 1/img3D.getDimensionSize("j"), 0, 0,
+      0, 0, 1/img3D.getDimensionSize("i"), 0,
+      0, 0, 0, 1
+    )
+
+
+    // for whatever reason, MNI space is flipped on X compared to WebGL.
+    // No big deal, it's probably just texture indexing convention.
+
+    let reverseDimensionality = new BABYLON.Matrix.FromValues(
+      0, 0, 1, 0,
+      0, 1, 0, 0,
+      1, 0, 0, 0,
+      0, 0, 0, 1
+    )
+
+    /*
+    // baby
+    let swap = new BABYLON.Matrix.FromValues(
+      0, 0, 1, 0,
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 0, 1
+    )
+    */
+
+
+    // structural
+    let swap = new BABYLON.Matrix.FromValues(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    )
+
+
+
+
+
+    // with swap AND reverseDimensionality
+    //let transfoMat = swap.multiply( reverseDimensionality ).multiply( w2v ); // works ok for structural.nii
+    //let transfoMat = reverseDimensionality.multiply( swap ).multiply( w2v ); // also works for structural.nii
+
+    // with JUST reverseDimensionality
+    let transfoMat = reverseDimensionality.multiply( w2vFlipedX )
+
+    //let transfoMat = flipX.multiply( reverseDimensionality ).multiply( w2v );
+    //let transfoMat = reverseDimensionality.multiply( flipX ).multiply( w2v );
+
+    /*
+    transfoMat.m[3] /= img3D.getDimensionSize("i");
+    transfoMat.m[7] /= img3D.getDimensionSize("j");
+    transfoMat.m[11] /= img3D.getDimensionSize("k");
+    */
+
+    transfoMat.m[3] = 0.5
+    transfoMat.m[7] = 0.5
+    transfoMat.m[11] = 0.5
+
+    //transfoMat = w2v.multiply( flipper );
+
+    this._transfoMatrices.v2t = transfoMat//.multiply( flipper )
+
+    // sometimes, one of the offset (or more) is zero, which makes no
+    // sens in this brain context (weither it's Talairach or MNI space).
+    // Then, we arbitrarily set the origin at the center of the volume.
+    // In this case, the world origin is no longer valid but we still
+    // keep relative size ok.
+    this._transfoMatrices.v2t_center = this._transfoMatrices.v2t.clone();
+    this._transfoMatrices.v2t_center.m[3] = 0.5;
+    this._transfoMatrices.v2t_center.m[7] = 0.5;
+    this._transfoMatrices.v2t_center.m[11] = 0.5;
+  }
+
 
 
   /**

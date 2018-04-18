@@ -48,7 +48,7 @@ class RenderEngine {
   _initMainCamera () {
     let mainCam = new BABYLON.ArcRotateCamera("main", Math.PI / 2, Math.PI / 2, 2, BABYLON.Vector3.Zero(), this._scene);
     mainCam.inertia = 0.7;
-    mainCam.setPosition( new BABYLON.Vector3(250, 250, 250) )
+    mainCam.setPosition( new BABYLON.Vector3(100, 0, 0) )
     mainCam.attachControl( this._canvas, true, true );
     mainCam.upperBetaLimit = null;
     mainCam.lowerBetaLimit = null;
