@@ -243,6 +243,10 @@ class RenderEngine {
    */
   mountVolumeN (n, volume) {
     if( n>=0 && n < this._mountedVolumes.length ){
+      if (this._mountedVolumes[n]) {
+        console.warn("Replacing a volume already mounted on slot " + n);
+      }
+
       this._mountedVolumes[n] = volume;
       this._shaderMaterial.setTexture( "vol_" + n + "_texture3D", volume.getTexture3D() )
       this._shaderMaterial.setMatrix( "vol_" + n + "_transfoMat", volume.getMatrix("v2t") )
@@ -277,7 +281,7 @@ class RenderEngine {
    * @param  {[type]} n [description]
    */
   unmountVolumeN (n) {
-    if( n>0 && n < this._mountedVolumes.length ){
+    if( n>=0 && n < this._mountedVolumes.length ){
       this._mountedVolumes[n] = null
       this._initFakeTexture (n, this._shaderMaterial)
     }else{
@@ -301,7 +305,7 @@ class RenderEngine {
    * @return {Boolean} true if already taken (or out of range), false if free
    */
   isSlotTakenN (n) {
-    if( n>0 && n < this._mountedVolumes.length ){
+    if( n>=0 && n < this._mountedVolumes.length ){
       return ( !!this._mountedVolumes[n] )
     }else{
       console.warn('the index of the slot is out of range.')

@@ -44,22 +44,22 @@
     renderEngine.setBlendMethod(2)
 
     //let distantFile = "../testdata/t1.mgh";
-    //let distantFile = "../testdata/andrew_mri_nov_2015.mnc";
-    //let distantFile = "../testdata/andrew_mri_nov_2015.nii.gz";
+    //let distantFile2 = "../testdata/andrew_mri_nov_2015.mnc";
+    let distantFile2 = "../testdata/andrew_mri_nov_2015.nii.gz";
     //let distantFile = "../testdata/baby.mnc";
     //let distantFile = "../testdata/structural.nii.gz";
     //let distantFile = "../testdata/funct/functional.nii";
     //let distantFile = "../testdata/50422.nii.gz";
-    let distantFile2 = "../testdata/average/average305_t1_tal_lin.nii";
-    let distantFile = "../testdata/model_t1w.nii";
+    let distantFile = "../testdata/average/average305_t1_tal_lin.nii";
+    //let distantFile = "../testdata/model_t1w.nii";
     //let distantFile = "../testdata/avg152T1_LR_nifti.nii.gz";
 
-    volumeCollection.addVolumeFromUrl( distantFile );
+    //volumeCollection.addVolumeFromUrl( distantFile );
     //volumeCollection.addVolumeFromUrl( distantFile2 );
 
     // pair 1
     volumeCollection.addVolumeFromUrl( "../testdata/structural.nii.gz" );
-    //volumeCollection.addVolumeFromUrl( "../testdata/funct/functional.nii" );
+    volumeCollection.addVolumeFromUrl( "../testdata/funct/functional.nii" );
 
     // pair 2
     //volumeCollection.addVolumeFromUrl( "../testdata/t1.mgh" );
