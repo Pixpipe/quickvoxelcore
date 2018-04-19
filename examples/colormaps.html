@@ -1,0 +1,95 @@
+<html>
+<head>
+  <title>Test</title>
+
+  <style>
+  html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    color: white;
+  }
+
+  a {
+    text-decoration: none;
+    color: #FF91D7;
+  }
+
+  #renderCanvas {
+    width: 100%;
+    height: 100%;
+    /*touch-action: none;*/
+  }
+
+  #colormapDiv {
+    position: absolute;
+    background: #000;
+    top: 0;
+    left: 0;
+    width: 100px;
+    border: 5px solid #000;
+  }
+
+  #colormapDiv canvas {
+    width: 100%;
+    height: 10px;
+    margin-bottom: 2px;
+  }
+
+  </style>
+
+</head>
+<body>
+  <!-- importing the automatically build module -->
+  <script src="../dist/quickvoxelcore.js"></script>
+
+
+  <canvas id="renderCanvas" touch-action="none"></canvas>
+  <div id="colormapDiv"></div>
+
+  <script>
+    let canvas = document.getElementById("renderCanvas")
+    let colormapDiv = document.getElementById("colormapDiv")
+
+    // the QuickvoxelCore instance is the entry point
+    let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
+    // for future access to the volume collection
+    let volumeCollection = qvc.getVolumeCollection()
+    // for future access the render engine
+    let renderEngine = qvc.getRenderEngine()
+
+    // adjusting contrast and brightness for better rendering with colormap
+    renderEngine.setContrastSlotN(0, 1.5)
+    renderEngine.setBrightnessSlotN(0, 0.3)
+    
+
+    // display colormaps to allow selection
+    let allColormaps = renderEngine.getListOfColormaps()
+    allColormaps.forEach(function(cmName){
+      let cmCanvas = renderEngine.getColormapsCanvas(cmName)
+      colormapDiv.appendChild( cmCanvas )
+      cmCanvas.addEventListener("mouseover",function(e){
+        renderEngine.setColormapSlotN(0, cmName)
+      });
+    })
+
+
+    volumeCollection.addVolumeFromUrl( "../data/structural.nii.gz" )
+
+    // mount the volume when it's ready!
+    volumeCollection.on("volumeReady", function(volume){
+      let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+      if( !couldMount ){
+        console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+      }
+    })
+
+
+
+  </script>
+
+</body>
+</html>

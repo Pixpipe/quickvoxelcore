@@ -1,6 +1,7 @@
-import * as BABYLON from 'babylonjs/es6.js';
-import worldcoordtexture3dFrag from './shaders/worldcoordtexture3d.frag.glsl';
-import worldcoordtexture3dVert from './shaders/worldcoordtexture3d.vert.glsl';
+import * as BABYLON from 'babylonjs/es6.js'
+import worldcoordtexture3dFrag from './shaders/worldcoordtexture3d.frag.glsl'
+import worldcoordtexture3dVert from './shaders/worldcoordtexture3d.vert.glsl'
+import { ColormapManager } from './ColormapManager.js'
 
 const DEFAULT_PLANE_SIZE = 1000;
 
@@ -13,13 +14,14 @@ class RenderEngine {
    * @param {DomElement} canvasElem - a DOM object of a canvas
    */
   constructor ( canvasElem ) {
-    let that = this;
-    BABYLON.Effect.ShadersStore["worldCoordVolumeFragmentShader"] = worldcoordtexture3dFrag;
-    BABYLON.Effect.ShadersStore["worldCoordVolumeVertexShader"] = worldcoordtexture3dVert;
+    let that = this
+    BABYLON.Effect.ShadersStore["worldCoordVolumeFragmentShader"] = worldcoordtexture3dFrag
+    BABYLON.Effect.ShadersStore["worldCoordVolumeVertexShader"] = worldcoordtexture3dVert
 
-    this._canvas = canvasElem;
-    this._engine = new BABYLON.Engine(this._canvas, true);
-    this._scene = new BABYLON.Scene(this._engine);
+    this._canvas = canvasElem
+    this._engine = new BABYLON.Engine(this._canvas, true)
+    this._scene = new BABYLON.Scene(this._engine)
+    this._colormapManager = new ColormapManager( this._scene )
     this._cameras = {
       main: this._initMainCamera(),
     }
@@ -78,7 +80,7 @@ class RenderEngine {
       },
       {
         attributes: ["position", "normal", "uv"],
-        uniforms: ["world", "worldView", "worldViewProjection", "blendMethod",
+        uniforms: ["world", "worldView", "worldViewProjection", "blendMethod", "vol_0_vol_1_blendRatio",
           "vol_0_texture3D", "vol_0_transfoMat", "vol_0_timeVal", "vol_0_timeSize", "vol_0_textureReady",
           "vol_1_texture3D", "vol_1_transfoMat", "vol_1_timeVal", "vol_1_timeSize", "vol_1_textureReady"
         ]
@@ -86,8 +88,14 @@ class RenderEngine {
 
     // setting some default values
     shaderMaterial.setInt( "blendMethod", 0 )
-    this._initFakeTexture( 0, shaderMaterial )
-    this._initFakeTexture( 1, shaderMaterial )
+
+    // must be in [0, 1].
+    // if closer to 0, the primary volume is more visible
+    // if closer to 1, the secondary volume is more visible
+    shaderMaterial.setFloat( "vol_0_vol_1_blendRatio", 0.5 )
+
+    this._initDefaultTexture( 0, shaderMaterial )
+    this._initDefaultTexture( 1, shaderMaterial )
 
     return shaderMaterial;
   }
@@ -95,6 +103,8 @@ class RenderEngine {
 
   /**
    * Change the blending method. Note that this matters only when 2 textures are displayed
+   *   0: mix using the blendRatio
+   *   1: average of both volume on each channel
    * @param {Number} m - method of blending
    */
   setBlendMethod (m) {
@@ -106,12 +116,20 @@ class RenderEngine {
    * @param  {Number} n - 0 for primary, 1 for secondary
    * @param  {BABYLON.ShaderMaterial} shaderMaterial - the shader material to update
    */
-  _initFakeTexture (n, shaderMaterial) {
+  _initDefaultTexture (n, shaderMaterial) {
     shaderMaterial.setTexture( "vol_" + n + "_texture3D", this._emptyTexture3D )
     shaderMaterial.setMatrix( "vol_" + n + "_transfoMat", BABYLON.Matrix.Identity() )
     shaderMaterial.setInt( "vol_" + n + "_timeVal", 0 )
     shaderMaterial.setInt( "vol_" + n + "_timeSize", 0 )
     shaderMaterial.setInt( "vol_" + n + "_textureReady", 0 )
+
+    let defaultColormapTexture = this._colormapManager.getColormap()
+    shaderMaterial.setTexture( "vol_" + n + "_colormap", defaultColormapTexture )
+    shaderMaterial.setInt( "vol_" + n + "_colormapFlip", 0 )
+
+    // brightness and contrast
+    shaderMaterial.setFloat( "vol_" + n + "_brightness", 0. )
+    shaderMaterial.setFloat( "vol_" + n + "_contrast", 1. )
   }
 
 
@@ -283,7 +301,7 @@ class RenderEngine {
   unmountVolumeN (n) {
     if( n>=0 && n < this._mountedVolumes.length ){
       this._mountedVolumes[n] = null
-      this._initFakeTexture (n, this._shaderMaterial)
+      this._initDefaultTexture (n, this._shaderMaterial)
     }else{
       console.warn('the index of the volume to unmount is out of range.')
     }
@@ -328,6 +346,88 @@ class RenderEngine {
     return -1;
   }
 
+
+  /**
+   * Get the list of colormaps available, by name
+   * @return {Array} Array of strings
+   */
+  getListOfColormaps () {
+    return this._colormapManager.getListOfColormaps()
+  }
+
+
+  /**
+   * Define the colormap the use on the texture loaded on the Nth slot
+   * @param {Number} n - index of the volume slot (most likely 0 or 1)
+   * @param {String} cmName - name of the colormap. Get the list of names with `.getListOfColormaps()`
+   */
+  setColormapSlotN (n, cmName) {
+    if( n>=0 && n < this._mountedVolumes.length ){
+      let cmTexture = this._colormapManager.getColormap( cmName )
+      if( !cmTexture ){
+        console.warn("The colormap named " + cmName + " does not exist")
+        return;
+      }
+      this._shaderMaterial.setTexture( "vol_" + n + "_colormap", cmTexture )
+    }else{
+      console.warn('the index of the slot is out of range.')
+    }
+  }
+
+
+  /**
+   * Set the orientation of the colormap used on the slot n, original or flipped
+   * @param {Number} orientation - 0 for original, 1 for fliped
+   */
+  setColormapOrientationSlotN (n, orientation) {
+    if( n>=0 && n < this._mountedVolumes.length ){
+      this._shaderMaterial.setInt( "vol_" + n + "_colormapFlip", +(!!orientation) )
+    }else{
+      console.warn('the index of the slot is out of range.')
+    }
+  }
+
+
+  /**
+   * Get the canvas that represents a colormap. This is convenient when we want to
+   * display one or more colormap in the UI.
+   * @param  {String} cmName - name of the colormap to get
+   * @return {Canvas} The HTML5 Canvas object, ready to be appended to a div
+   */
+  getColormapsCanvas (cmName) {
+    return this._colormapManager.getColormapCanvas( cmName )
+  }
+
+
+  /**
+   * Set the brightness value to apply on the volume of the slot n.
+   * @param {Number} n - index of the volume slot
+   * @param {Number} b - value of the brightness, neutral being 0
+   */
+  setBrightnessSlotN (n, b=0.) {
+    this._shaderMaterial.setFloat( "vol_" + n + "_brightness", b )
+  }
+
+
+  /**
+   * Set the contrast value to apply on the volume of the slot n.
+   * @param {Number} n - index of the volume slot
+   * @param {Number} b - value of the cotrast, neutral being 1
+   */
+  setContrastSlotN (n, c=1.) {
+    this._shaderMaterial.setFloat( "vol_" + n + "_contrast", c )
+  }
+
+
+  /**
+   * must be in [0, 1].
+   * if closer to 0, the primary volume is more visible
+   * if closer to 1, the secondary volume is more visible
+   * @param {Number} r - ratio
+   */
+  setBlendingRatio (r) {
+    this._shaderMaterial.setFloat( "vol_0_vol_1_blendRatio", r )
+  }
 
   /*
   move along the normal of a plane:

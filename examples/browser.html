@@ -24,6 +24,21 @@
     /*touch-action: none;*/
   }
 
+  #colormapDiv {
+    position: absolute;
+    background: #000;
+    top: 0;
+    left: 0;
+    width: 100px;
+    border: 5px solid #000;
+  }
+
+  #colormapDiv canvas {
+    width: 100%;
+    height: 10px;
+    margin-bottom: 2px;
+  }
+
   </style>
 
 </head>
@@ -33,14 +48,27 @@
 
 
   <canvas id="renderCanvas" touch-action="none"></canvas>
+  <div id="colormapDiv"></div>
 
   <script>
-    let canvas = document.getElementById("renderCanvas");
+    let canvas = document.getElementById("renderCanvas")
+    let colormapDiv = document.getElementById("colormapDiv")
 
     // the foo object is part of our quickvoxelcore module
     let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
     let volumeCollection = qvc.getVolumeCollection();
     let renderEngine = qvc.getRenderEngine();
+
+    // display colormaps to allow selection
+    let allColormaps = renderEngine.getListOfColormaps()
+    allColormaps.forEach(function(cmName){
+      let cmCanvas = renderEngine.getColormapsCanvas(cmName)
+      colormapDiv.appendChild( cmCanvas )
+      cmCanvas.addEventListener("mouseover",function(e){
+        renderEngine.setColormapSlotN(0, cmName)
+      });
+    })
+
     renderEngine.setBlendMethod(2)
 
     //let distantFile = "../testdata/t1.mgh";
@@ -59,7 +87,7 @@
 
     // pair 1
     volumeCollection.addVolumeFromUrl( "../testdata/structural.nii.gz" );
-    volumeCollection.addVolumeFromUrl( "../testdata/funct/functional.nii" );
+    //volumeCollection.addVolumeFromUrl( "../testdata/funct/functional.nii" );
 
     // pair 2
     //volumeCollection.addVolumeFromUrl( "../testdata/t1.mgh" );

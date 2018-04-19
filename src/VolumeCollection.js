@@ -14,9 +14,10 @@ class VolumeCollection {
     this._volume = {}
 
     this._events = {
-      volumeAdded: null,
-      volumeRemoved: null,
-      errorAddingVolume: null,
+      volumeAdded: null, // called when the volume is parsed and added to the collection
+      volumeReady: null, // called just after "volumeAdded", means the volume has its texture ready
+      volumeRemoved: null, // called when a volume is removed from the collection
+      errorAddingVolume: null, // called when a volume could not be added to the collection
     };
   }
 
@@ -69,6 +70,7 @@ class VolumeCollection {
     let id = volume.getId()
     this._volume[ id ] = volume;
     this._callEvent( 'volumeAdded', [volume] );
+    this._callEvent( 'volumeReady', [volume] );
   }
 
 
@@ -110,7 +112,7 @@ class VolumeCollection {
       let img3D = generic3DDecoder.getOutput()
 
       if( img3D ){
-        console.log( img3D ); 
+        console.log( img3D );
         let id = that._generateID( urlArrBuff.getMetadata("filenames")[0] );
         let volume = new Volume( id, img3D );
         that._addToCollection( volume )

@@ -27,12 +27,6 @@ class QuickvoxelCore {
     this._volumeCollection.on('volumeAdded', function( volume ){
       console.log(`Volume ${volume.getId()} added to collection. Now building 3D texture.`);
       volume.buildTexture( that._renderEngine.getScene() );
-
-      let couldMount = that._renderEngine.mountVolumeOnFirstEmptySlot( volume )
-      if( !couldMount ){
-        console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
-      }
-
     })
 
     // just display a fail message
