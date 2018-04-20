@@ -2,8 +2,7 @@ import * as BABYLON from 'babylonjs/es6.js'
 import worldcoordtexture3dFrag from './shaders/worldcoordtexture3d.frag.glsl'
 import worldcoordtexture3dVert from './shaders/worldcoordtexture3d.vert.glsl'
 import { ColormapManager } from './ColormapManager.js'
-
-const DEFAULT_PLANE_SIZE = 1000;
+import { CONSTANTS } from './constants.js'
 
 /**
  * [RenderEngine description]
@@ -81,8 +80,8 @@ class RenderEngine {
       {
         attributes: ["position", "normal", "uv"],
         uniforms: ["world", "worldView", "worldViewProjection", "blendMethod", "vol_0_vol_1_blendRatio",
-          "vol_0_texture3D", "vol_0_transfoMat", "vol_0_timeVal", "vol_0_timeSize", "vol_0_textureReady",
-          "vol_1_texture3D", "vol_1_transfoMat", "vol_1_timeVal", "vol_1_timeSize", "vol_1_textureReady"
+          "vol_0_texture3D", "vol_0_transfoMat", "vol_0_timeVal", "vol_0_timeSize", "vol_0_textureReady", "vol_0_display",
+          "vol_1_texture3D", "vol_1_transfoMat", "vol_1_timeVal", "vol_1_timeSize", "vol_1_textureReady", "vol_1_display"
         ]
       });
 
@@ -102,14 +101,27 @@ class RenderEngine {
 
 
   /**
-   * Change the blending method. Note that this matters only when 2 textures are displayed
-   *   0: mix using the blendRatio
-   *   1: average of both volume on each channel
-   * @param {Number} m - method of blending
+   * Change the blending method. Note that this matters only when 2 textures are displayed.
+   *
+   * @param {String} m - method of blending
    */
-  setBlendMethod (m) {
-    this._shaderMaterial.setInt( "blendMethod", m )
+  setBlendMethod (method) {
+    if (method in CONSTANTS.BLENDING_METHODS) {
+      this._shaderMaterial.setInt( 'blendMethod', CONSTANTS.BLENDING_METHODS[method] )
+    } else {
+      console.warn('The blending method ' + method + ' does not exist.');
+    }
   }
+
+
+  /**
+   * Get the list of blending methods
+   * @return {Array} the list of strings, names of the blending methods
+   */
+  getBlendMethodList () {
+    return Object.keys( CONSTANTS.BLENDING_METHODS )
+  }
+
 
   /**
    * Initialize the texture data relative to a single texture
@@ -122,6 +134,7 @@ class RenderEngine {
     shaderMaterial.setInt( "vol_" + n + "_timeVal", 0 )
     shaderMaterial.setInt( "vol_" + n + "_timeSize", 0 )
     shaderMaterial.setInt( "vol_" + n + "_textureReady", 0 )
+    shaderMaterial.setInt( "vol_" + n + "_display", 1 )
 
     let defaultColormapTexture = this._colormapManager.getColormap()
     shaderMaterial.setTexture( "vol_" + n + "_colormap", defaultColormapTexture )
@@ -143,8 +156,8 @@ class RenderEngine {
     let xyPlane = BABYLON.MeshBuilder.CreatePlane(
       "xyOrthoPlane",
       {
-        height:DEFAULT_PLANE_SIZE,
-        width: DEFAULT_PLANE_SIZE,
+        height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
+        width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         sideOrientation: BABYLON.Mesh.DOUBLESIDE
       }, this._scene);
     xyPlane.parent = orthoPlaneSystem;
@@ -153,8 +166,8 @@ class RenderEngine {
     let xzPlane = BABYLON.MeshBuilder.CreatePlane(
       "xzOrthoPlane",
       {
-        height:DEFAULT_PLANE_SIZE,
-        width: DEFAULT_PLANE_SIZE,
+        height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
+        width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         sideOrientation: BABYLON.Mesh.DOUBLESIDE
       }, this._scene);
     xzPlane.rotation.x = Math.PI/2;
@@ -164,8 +177,8 @@ class RenderEngine {
     let yzPlane = BABYLON.MeshBuilder.CreatePlane(
       "yzOrthoPlane",
       {
-        height:DEFAULT_PLANE_SIZE,
-        width: DEFAULT_PLANE_SIZE,
+        height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
+        width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         sideOrientation: BABYLON.Mesh.DOUBLESIDE
       }, this._scene);
     yzPlane.rotation.y = Math.PI/2;
@@ -420,6 +433,14 @@ class RenderEngine {
 
 
   /**
+   * Display of hide the volume hosted on the Nth slot
+   * @param  {Boolean} [d=true] - display is true, hide if false
+   */
+  displayVolumeSlotN (n, d=true) {
+    this._shaderMaterial.setInt( "vol_" + n + "_display", +d )
+  }
+
+  /**
    * must be in [0, 1].
    * if closer to 0, the primary volume is more visible
    * if closer to 1, the secondary volume is more visible
@@ -428,6 +449,8 @@ class RenderEngine {
   setBlendingRatio (r) {
     this._shaderMaterial.setFloat( "vol_0_vol_1_blendRatio", r )
   }
+
+
 
   /*
   move along the normal of a plane:

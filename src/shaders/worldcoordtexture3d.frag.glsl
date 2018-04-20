@@ -16,6 +16,8 @@ uniform sampler3D vol_0_texture3D;
 uniform mat4 vol_0_transfoMat;
 // says if the primary 3D texture is ready
 uniform int vol_0_textureReady;
+// once it's ready, do we wish to display the primary volume?
+uniform int vol_0_display;
 // the current time position within the primary 3D texture
 uniform int vol_0_timeVal;
 // the number of time position available in the primary 3D texture
@@ -36,6 +38,8 @@ uniform sampler3D vol_1_texture3D;
 uniform mat4 vol_1_transfoMat;
 // says if the secondary 3D texture is ready
 uniform int vol_1_textureReady;
+// once it's ready, do we wish to display the secondary volume?
+uniform int vol_1_display;
 // the current time position within the secondary 3D texture
 uniform int vol_1_timeVal;
 // the number of time position available in the secondary 3D texture
@@ -56,7 +60,7 @@ uniform float vol_1_contrast;
 // the volume range and 1 if inside. To be used to know wether of not to use the
 // returned color.
 vec4 getColorVol_0( out int shouldDisplay, out float intensity){
-  if( vol_0_textureReady == 0 ){
+  if( vol_0_textureReady == 0 || vol_0_display == 0){
     shouldDisplay = 0;
     return vec4(0., 0., 0., 0.);
   }
@@ -90,7 +94,7 @@ vec4 getColorVol_0( out int shouldDisplay, out float intensity){
 // the volume range and 1 if inside. To be used to know wether of not to use the
 // returned color.
 vec4 getColorVol_1( out int shouldDisplay, out float intensity ){
-  if( vol_1_textureReady == 0 ){
+  if( vol_1_textureReady == 0 || vol_1_display == 0){
     shouldDisplay = 0;
     return vec4(0., 0., 0., 0.);
   }
@@ -125,27 +129,20 @@ vec4 blend( vec4 color0, vec4 color1, float intensity0, float intensity1, int me
 
   switch( method ){
 
-    // blending
+    // ratio
     case 0:
     color = color0 * (1. - vol_0_vol_1_blendRatio) + (color1 * vol_0_vol_1_blendRatio);
     break;
 
-    // avg
-    case 1:
-    color.r = (color0.r + color1.r) / 2.;
-    color.g = (color0.g + color1.g) / 2.;
-    color.b = (color0.b + color1.b) / 2.;
-    color.a = (color0.a + color1.a) / 2.;
-    break;
 
-    // adding
-    case 3:
+    // adding weighted
+    case 1:
     color = color0 + color1*vol_0_vol_1_blendRatio;
     break;
 
 
     // multiply
-    case 4:
+    case 2:
     color = color0 * color1;
 
     default:

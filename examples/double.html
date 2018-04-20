@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>Test</title>
+  <title>Double</title>
 
   <style>
   html, body {
@@ -44,6 +44,13 @@
     // for future access the render engine
     let renderEngine = qvc.getRenderEngine();
 
+    // color and constrast settings
+    renderEngine.setColormapSlotN(1, 'jet')
+    renderEngine.setBlendMethod("multiply")
+    renderEngine.setBrightnessSlotN(1, 0.15)
+    renderEngine.setBrightnessSlotN(0, 0.25)
+    renderEngine.setContrastSlotN(0, 1.2)
+
     let dataFolder = "../data/"
     let structural = "structural.nii.gz"
     let functional = "functional.nii.gz"
@@ -61,7 +68,6 @@
         renderEngine.mountVolumeN( 0, volume )
       }else{
         renderEngine.mountVolumeN( 1, volume )
-        renderEngine.setColormapSlotN(1, 'jet')
       }
     })
 
