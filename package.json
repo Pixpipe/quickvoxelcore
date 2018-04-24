@@ -6,6 +6,7 @@
   "moduleName": "quickvoxelcore",
   "entry": "src/main.js",
   "main": "dist/quickvoxelcore.js",
+  "es6": "dist/quickvoxelcore.es6.js",
   "min": "dist/quickvoxelcore.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -31,10 +32,9 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-uglify": "^3.0.0",
     "serve": "^6.3.1",
-    "standard": "^11.0.1"
+    "standard": "^11.0.1",
+    "babylonjs": "^3.2.0-rc.2",
+    "pixpipe": "^0.1.4"
   },
-  "dependencies": {
-    "babylonjs": "^3.2.0-beta.5",
-    "pixpipe": "file:../../pixpipe/pixpipejs"
-  }
+  "dependencies": {}
 }

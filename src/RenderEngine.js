@@ -44,6 +44,7 @@ class RenderEngine {
 
 
   /**
+   * @private
    * Initialize the default (main) camera. The main camera is a regular perspective cemera (aka. not ortho)
    */
   _initMainCamera () {
@@ -64,11 +65,21 @@ class RenderEngine {
     return mainCam;
   }
 
+  /**
+   * @private
+   * Creates an empty texture so that the shader can be initialized with data
+   * @return {[type]} [description]
+   */
   _initEmpty3dTexture () {
     return new BABYLON.RawTexture3D( new Uint8Array(1),1,1,1,BABYLON.Engine.TEXTUREFORMAT_LUMINANCE, this._scene);
   }
 
 
+  /**
+   * @private
+   * Initialize the shader material of the plane system
+   * @return {[type]} [description]
+   */
   _initShaderMaterial () {
     let shaderMaterial = new BABYLON.ShaderMaterial(
       'shad',
@@ -102,7 +113,10 @@ class RenderEngine {
 
   /**
    * Change the blending method. Note that this matters only when 2 textures are displayed.
-   *
+   * Available are:
+   *   - `quickvoxelcore.CONSTANTS.BLENDING_METHODS.ratio`
+   *   - `quickvoxelcore.CONSTANTS.BLENDING_METHODS.added-weighted`
+   *   - `quickvoxelcore.CONSTANTS.BLENDING_METHODS.multiply` (default)
    * @param {String} m - method of blending
    */
   setBlendMethod (method) {
@@ -124,6 +138,7 @@ class RenderEngine {
 
 
   /**
+   * @private
    * Initialize the texture data relative to a single texture
    * @param  {Number} n - 0 for primary, 1 for secondary
    * @param  {BABYLON.ShaderMaterial} shaderMaterial - the shader material to update
@@ -147,24 +162,27 @@ class RenderEngine {
 
 
   /**
+   * @private
    * Design a plane system composed of 3 orthogonal planes, each of them being 1000x1000
    * @return {[type]} [description]
    */
   _initOrthoPlaneSystem () {
     let orthoPlaneSystem = new BABYLON.Mesh( "orthoPlaneSystem", this._scene );
+    orthoPlaneSystem.rotationQuaternion = BABYLON.Quaternion.Identity()
 
     let xyPlane = BABYLON.MeshBuilder.CreatePlane(
-      "xyOrthoPlane",
+      "xy",
       {
         height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         sideOrientation: BABYLON.Mesh.DOUBLESIDE
       }, this._scene);
+    xyPlane.rotation.x = Math.PI; // just so that the first normal goes to the positive direction
     xyPlane.parent = orthoPlaneSystem;
     xyPlane.material = this._shaderMaterial
 
     let xzPlane = BABYLON.MeshBuilder.CreatePlane(
-      "xzOrthoPlane",
+      "xz",
       {
         height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
@@ -175,18 +193,19 @@ class RenderEngine {
     xzPlane.material = this._shaderMaterial;
 
     let yzPlane = BABYLON.MeshBuilder.CreatePlane(
-      "yzOrthoPlane",
+      "yz",
       {
         height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         sideOrientation: BABYLON.Mesh.DOUBLESIDE
       }, this._scene);
-    yzPlane.rotation.y = Math.PI/2;
+    yzPlane.rotation.y = -Math.PI/2;
     yzPlane.parent = orthoPlaneSystem;
     yzPlane.material = this._shaderMaterial;
 
     return orthoPlaneSystem;
   }
+
 
   /**
    * Set the position of a given camera, by its id
@@ -205,55 +224,32 @@ class RenderEngine {
   /**
    * Update the position of the center of the _planeSystem in world coordinates.
    * Not each position property have to be updated.
-   * @param  {Object} [position={x:null, y:null, z:null}] - The new position
+   * @param  {Object} [position={x:undefined, y:undefined, z:undefined}] - The new position
    */
-  updatePlaneSystemPosition (position={x:null, y:null, z:null}) {
-    if (position.x !== null) {
+  updatePlaneSystemPosition (position={x:undefined, y:undefined, z:undefined}) {
+    if (position.x !== undefined) {
       this._planeSystem.position.x = position.x;
     }
 
-    if (position.y !== null) {
+    if (position.y !== undefined) {
       this._planeSystem.position.y = position.y;
     }
 
-    if (position.z !== null) {
+    if (position.z !== undefined) {
       this._planeSystem.position.z = position.z;
     }
   }
 
 
-  /**
-   * Update the rotation of the _planeSystem in world coordinates, around its center.
-   * @param  {Object} [rotation={x:null] [description]
-   * @param  {[type]} y                  [description]
-   * @param  {[type]} z                  [description]
-   * @return {[type]}                    [description]
-   */
-  updatePlaneSystemRotation(rotation={x:null, y:null, z:null}) {
-    if (rotation.x !== null) {
-      this._planeSystem.rotation.x = rotation.x;
-    }
-
-    if (rotation.y !== null) {
-      this._planeSystem.rotation.y = rotation.y;
-    }
-
-    if (rotation.z !== null) {
-      this._planeSystem.rotation.z = rotation.z;
-    }
-  }
 
 
   /**
-   * Reset the position and rotation of the _planeSystem
+   * Reset the rotation of the _planeSystem
    */
-  resetPlaneSystem(){
+  resetPosition () {
     this._planeSystem.position.x = 0;
     this._planeSystem.position.y = 0;
     this._planeSystem.position.z = 0;
-    this._planeSystem.rotation.x = 0;
-    this._planeSystem.rotation.y = 0;
-    this._planeSystem.rotation.z = 0;
   }
 
 
@@ -451,14 +447,144 @@ class RenderEngine {
   }
 
 
-
-  /*
-  move along the normal of a plane:
-  let xyPlane = scene.getMeshByName('xyPlane')
-  let xyPlaneNormal = xyPlane.getFacetNormal()
-  then, it's signed adn there are 4 facets. The 2 first facets have the same normal
-  while the 2 last have normals in the opposite direction. These normals are in world.
+  /**
+   * @private
+   * Get the normal vector of a given plane.
+   * @param  {String} planeName - name of the plane. Can be 'xy', 'xz' or 'yz'
+   * @return {BABYLON.Vector3} the normal vector
    */
+  _getPlaneNormalVector ( planeName ) {
+    let plane = this._scene.getMeshByName(planeName)
+
+    if (!plane) {
+      console.warn('The plane ' + planeName + ' does not exist.');
+      return;
+    }
+
+    let planeNormal = plane.getFacetNormal(0)
+    return planeNormal
+  }
+
+
+  /**
+   * @private
+   * Check which of the 3 orthogonal plane has its normal vector pointing the most
+   * to the same direction as the given vector. It also check for inverse vector.
+   * @param  {BABYLON.Vector3} refVec - the reference direction
+   * @return {BABYLON.Vector} The normal vector of a plane that goes the most towards the same direction as refVec (or the opposite direction)
+   */
+  _getDominantPlaneNormal (refVec) {
+    let refVecNorm = refVec.normalizeToNew()
+
+    let dotMax = 0
+    let dominantVector = 0
+    let planes = this._planeSystem.getChildMeshes()
+
+    for (let i=0; i<planes.length; i++) {
+      let n = planes[i].getFacetNormal(0)
+      let dot = BABYLON.Vector3.Dot(refVecNorm, n )
+      let absDot = Math.abs(dot)
+
+      if (Math.abs(dot) > dotMax) {
+        dotMax = absDot
+        dominantVector = (dot > 0) ? n.clone() : n.negate()
+      }
+    }
+    return dominantVector
+  }
+
+
+  /**
+   * Get the the one of the 3 normal vectors of the _planeSystem that goes
+   * dominantly towards the X direction
+   * (Here "dominantly" is deducted by performing a dot product with [!, 0, 0])
+   * @return {BABYLON.Vector3} the normal vector (as a clone)
+   */
+  getXDominantPlaneNormal () {
+    return this._getDominantPlaneNormal( new BABYLON.Vector3(1, 0, 0) )
+  }
+
+
+  /**
+   * Get the the one of the 3 normal vectors of the _planeSystem that goes
+   * dominantly towards the Y direction
+   * * (Here "dominantly" is deducted by performing a dot product with [0, 1, 0])
+   * @return {BABYLON.Vector3} the normal vector (as a clone)
+   */
+  getYDominantPlaneNormal () {
+    return this._getDominantPlaneNormal( new BABYLON.Vector3(0, 1, 0) )
+  }
+
+
+  /**
+   * Get the the one of the 3 normal vectors of the _planeSystem that goes
+   * dominantly towards the Z direction.
+   * (Here "dominantly" is deducted by performing a dot product with [0, 0, 1])
+   * @return {BABYLON.Vector3} the normal vector (as a clone)
+   */
+  getZDominantPlaneNormal () {
+    return this._getDominantPlaneNormal( new BABYLON.Vector3(0, 0, 1) )
+  }
+
+
+  /**
+   * Rotate around the normal vector of the plane system that goes dominantly towards
+   * the X direction, from a relative angle (=adding rotation to the current system)
+   * @param  {Number} angle - in radian
+   */
+  rotateAroundXDominant (angle) {
+    let axis = this.getXDominantPlaneNormal()
+    let center = this._planeSystem.position
+    this._planeSystem.rotateAround( center, axis, angle )
+  }
+
+
+  /**
+   * Rotate around the normal vector of the plane system that goes dominantly towards
+   * the Y direction, from a relative angle (=adding rotation to the current system)
+   * @param  {Number} angle - in radian
+   */
+  rotateAroundYDominant (angle) {
+    let axis = this.getYDominantPlaneNormal()
+    let center = this._planeSystem.position
+    this._planeSystem.rotateAround( center, axis, angle )
+  }
+
+
+  /**
+   * Rotate around the normal vector of the plane system that goes dominantly towards
+   * the Z direction, from a relative angle (=adding rotation to the current system)
+   * @param  {Number} angle - in radian
+   */
+  rotateAroundZDominant (angle) {
+    let axis = this.getZDominantPlaneNormal()
+    let center = this._planeSystem.position
+    this._planeSystem.rotateAround( center, axis, angle )
+  }
+
+
+  /**
+   * Get the Euler angle of the plane system
+   * @return {BABYLON.Vector3} The Euler angle
+   */
+  getPlaneSystemEulerAngle () {
+    let eulerAngle = this._planeSystem.rotationQuaternion.toEulerAngles()
+    return eulerAngle
+  }
+
+
+  /**
+   * Set the Euler angle of the plane system
+   * @param {Number} x - Rotation on x
+   * @param {Number} y - Rotation on y
+   * @param {Number} z - Rotation on z
+   */
+  setPlaneSystemEulerAngle (x, y, z) {
+    let newQuat = BABYLON.Quaternion.RotationYawPitchRoll(y, x, z)
+    this._planeSystem.rotationQuaternion = newQuat
+  }
+
+
 }
 
 export { RenderEngine }

@@ -17,6 +17,7 @@ class QuickvoxelCore {
 
 
   /**
+   * @private
    * Initialize events
    */
   _initEvents () {

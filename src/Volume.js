@@ -1,7 +1,11 @@
 import * as BABYLON from 'babylonjs/es6.js'
 
 /**
- * [Volume description]
+ * A Volume instance is a volumetric representation of some data that can be queried, displayed and identified.
+ * - To be queried, a Volume embeds a `pixpipe.Image3DAlt`
+ * - To be displayed, a Volume generates a WebGL 3D texture from the `pixpipe.Image3DAlt`
+ * - To be identified, a Volume instance has an id, unique in the `VolumeCollection`
+ *
  */
 class Volume {
   /**
@@ -22,6 +26,7 @@ class Volume {
 
 
   /**
+   * @private
    * Compute the affine transformation matrix to go from world coord to unit texture
    */
   _computeV2Tmatrices(){
@@ -170,6 +175,20 @@ class Volume {
     return this._image3D.getTimeLength()
   }
 
+
+  /**
+   * Get the voxel value at the given world position.
+   * Note: the world coordinates are floating point and this method perform a lookup
+   * in voxel coordinates in the `pixpipe.Image3DAlt` data. Voxel coordinates being integer,
+   * no interpolation from worl to voxel is performed by this method.
+   * This just gives the value of the closest voxel.
+   * @param  {Object} [position={x:0, y:0, z:0}] - position in world coordinates
+   * @param  {Number} [time=0] - time index (makes sense only for time series)
+   * @return {Number} the voxel intensity
+   */
+  getValue (position={x:0, y:0, z:0}, time=0) {
+    return this._image3D.getVoxelTransfoSpace( "w2v", position, time )
+  }
 
 
 }

@@ -20,6 +20,7 @@ class ColormapManager {
 
 
   /**
+   * @private
    * Generate BabylonJS textures correcponding to Pixpipe builtin colormaps
    */
   _createColormapTextures () {
@@ -54,6 +55,7 @@ class ColormapManager {
 
 
   /**
+   * @private
    * Get the colormap of the given name.
    * @param  {String} name - name or the colormap. default: 'default', the greyscale colormap
    * @return {BABYLON.RawTexture} the texture that represent the colormap
@@ -69,9 +71,14 @@ class ColormapManager {
   }
 
 
+  /**
+   * Get a canvas element representing the given colormap.
+   * This canvas elem can directly be `append` to some div.
+   * @param  {String} [name='default'] - the name of the colormap (default: 'default')
+   * @return {Canvas} the Canvas object, of height 1px and width 512px (this depends on the default)
+   */
   getColormapCanvas (name='default') {
     name = (name === 'default') ? this._defaultColormap : name
-
     if (name in this._colormapCanvas) {
       return this._colormapCanvas[ name ]
     } else {
@@ -80,11 +87,21 @@ class ColormapManager {
   }
 
 
+  /**
+   * Get the list of colormap names
+   * @return {Array} a list of Strings
+   */
   getListOfColormaps () {
     return Object.keys( this._colormapTextures )
   }
 
 
+  /**
+   * @private
+   * Prepare a canvas object relative to a Pixpipe Image2D
+   * @param  {pixpipe.Image2D} image2D - the colormap as Image2D instance
+   * @return {Canvas} HTML5 canvas representing the colormap
+   */
   _makeCanvasFromColormap (image2D) {
     // creating a canvas element
     let canvas = document.createElement("canvas")
