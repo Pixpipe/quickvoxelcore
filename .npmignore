@@ -2,5 +2,6 @@ doc
 examples
 .DS_Store
 data
-asset
+assets
 testdata
+docgen
