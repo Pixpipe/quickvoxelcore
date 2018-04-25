@@ -80,12 +80,31 @@ Features:
 
 Requirement:
 
--   A modern web browser, compatible with WebGL2 (Chrome is ok for some versions)
+-   A modern web browser, compatible with WebGL2 (recent Chrome or Firefox)
 
 Quickvoxel Core is backed by [Pixpipe][63] for decoding volume files and process the data, and by [BabylonJS][64] for the WebGL2 rendering.
 
 Since this project is a **core only**, it is not bound to any frontend framework and needs to be sugar coated with some UI elements to provide a proper user interaction. You can find a minimal 10-lines example [here][65] ([source][66]).  
 A lot of additional methods to do more interesting things with _Quickvoxel_ are implemented in the core and need to be tied to UI element to be fully usable. We'll see that in the following part.
+
+# Demo
+
+(Most of the demos are less than 20 lines)
+
+-   [Simple with loading from URL][65] - [source][66]
+-   [Simple with loading from a local file][67] - [source][68]
+-   [Translate the plane][69] - [source][70]
+-   [Oblique plane][71] - [source][72]
+-   [With colormaps][73] - [source][74]
+-   [Oblique plane, animated][75] - [source][76]
+-   [Two volumes + blending + colormap][77] - [source][78]
+-   [+ time series animated][79] - [source][80]
+-   [+ animated translation][81] - [source][82]
+-   [+ animated oblique][83] - [source][84]
+
+# API documentation
+
+[HERE][85]
 
 # Install
 
@@ -247,7 +266,41 @@ volumeCollection.on("volumeReady", function(volume){
 })
 ```
 
-Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the [example here][67]. Then, the logic for mounting on a slot is the same.
+Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the [example here][68]. Then, the logic for mounting on a slot is the same.
+
+# Going Further
+
+The `RenderEngine` object has a lot of methods that can be used to tweak your visualization. Do no hesitate to consult the [API doc conserning the RenderEngine][86] to make sure you use them properly.  
+
+Here is a list of what you can do:
+
+-   show/hide a volume mounted on a slot
+-   change the blending method between two volumes
+-   mount/unmount a volume on/from a given slot
+-   apply a colormap on a given slot
+-   get the list of colormaps names and corresponding canvas for UI purpose
+-   display a reversed colormap
+-   change the brightness on a given slot
+-   change the contrast on a given slot
+-   change the time index of a volume on a given slot (time series)
+-   rotate with a relative angle around the normal of a plane from the plane system (1 plane remains fixed)
+-   translate along the normal of a plane from the plane system
+-   apply an absolute rotation in world coordinates Euler angles
+-   set the position of the plane system in absolute world coordinates
+-   [experimental] change the position of the camera (incomplete, `up` vector needs to be set too)
+
+# TODO
+
+In what is probably the order of future developments:
+
+-   Check if WebGL2 is enabled
+-   Add XYZ axis of a grid system to know where we are
+-   Masking capabilities (as a 3rd slot that has special features)
+-   Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)
+-   Try to build 3D textures without having to perform a conversion from float32 to uint8
+-   Add 3 cameras that are always facing each of the ortho planes
+-   Gives the possibility to change the camera
+-   Have a split view options with the 4 camera (3 orthos + 1 perspective)
 
 
 ## QuickvoxelCore
@@ -270,7 +323,7 @@ Returns **RenderingEngine**
 
 Get the volume collection, to access to some features such as adding/removing a volume
 
-Returns **[VolumeCollection][68]** 
+Returns **[VolumeCollection][87]** 
 
 ### mountVolumeOnSlotN
 
@@ -278,8 +331,8 @@ Mount the volume of the given id on the slot with the given index on the renderi
 
 **Parameters**
 
--   `n` **[Number][69]** the slot index
--   `volumeId` **[String][70]** the id of the volume within the collection
+-   `n` **[Number][88]** the slot index
+-   `volumeId` **[String][89]** the id of the volume within the collection
 
 ### unmountVolumeFromSlotN
 
@@ -340,17 +393,7 @@ Add a volume file to the collection, using an URL
 
 **Parameters**
 
--   `url` **[String][70]** url of the file
-
-### getVolume
-
-Get the `Volume` with the given id
-
-**Parameters**
-
--   `id` **[String][70]** id of a `Volume` within the collection
-
-Returns **[Volume][71]** the Volume instance with such id, or `null` if not found
+-   `url` **[String][89]** url of the file
 
 ### getVolume
 
@@ -358,9 +401,19 @@ Get the volume of the given id
 
 **Parameters**
 
--   `id` **[String][70]** unique id of the volume within the collection
+-   `id` **[String][89]** unique id of the volume within the collection
 
-Returns **([Volume][71] | null)** the volume if existing, or null if not existing
+Returns **([Volume][90] | null)** the volume if existing, or null if not existing
+
+### getVolume
+
+Get the `Volume` with the given id
+
+**Parameters**
+
+-   `id` **[String][89]** id of a `Volume` within the collection
+
+Returns **[Volume][90]** the Volume instance with such id, or `null` if not found
 
 ### getVolumeIds
 
@@ -374,8 +427,8 @@ Define the callback attached to an event
 
 **Parameters**
 
--   `eventName` **[String][70]** the name of the event, must exist in this.\_events (with the value null)
--   `callback` **[Function][72]** the function associated to this event
+-   `eventName` **[String][89]** the name of the event, must exist in this.\_events (with the value null)
+-   `callback` **[Function][91]** the function associated to this event
 
 ### removeVolume
 
@@ -384,7 +437,7 @@ with the id of the volume in argument
 
 **Parameters**
 
--   `id` **[String][70]** id of the volume to remove
+-   `id` **[String][89]** id of the volume to remove
 
 ## RenderEngine
 
@@ -404,13 +457,13 @@ Display of hide the volume hosted on the Nth slot
 **Parameters**
 
 -   `n`  
--   `d` **[Boolean][73]** display is true, hide if false (optional, default `true`)
+-   `d` **[Boolean][92]** display is true, hide if false (optional, default `true`)
 
 ### getBlendMethodList
 
 Get the list of blending methods
 
-Returns **[Array][74]** the list of strings, names of the blending methods
+Returns **[Array][93]** the list of strings, names of the blending methods
 
 ### getColormapsCanvas
 
@@ -419,7 +472,7 @@ display one or more colormap in the UI.
 
 **Parameters**
 
--   `cmName` **[String][70]** name of the colormap to get
+-   `cmName` **[String][89]** name of the colormap to get
 
 Returns **Canvas** The HTML5 Canvas object, ready to be appended to a div
 
@@ -427,13 +480,13 @@ Returns **Canvas** The HTML5 Canvas object, ready to be appended to a div
 
 Get the list of colormaps available, by name
 
-Returns **[Array][74]** Array of strings
+Returns **[Array][93]** Array of strings
 
 ### getNumberOfVolumeSlots
 
 Get the total number of volume slot in the reder engine (taken of not)
 
-Returns **[Number][69]** 
+Returns **[Number][88]** 
 
 ### getPlaneSystemEulerAngle
 
@@ -453,9 +506,9 @@ Look if the volume with the given id is mounted in a slot
 
 **Parameters**
 
--   `id` **[String][70]** id of the volume to look for
+-   `id` **[String][89]** id of the volume to look for
 
-Returns **[Number][69]** index of the slot where the volume is mounted, or -1 if not mounted
+Returns **[Number][88]** index of the slot where the volume is mounted, or -1 if not mounted
 
 ### getXDominantPlaneNormal
 
@@ -488,9 +541,9 @@ Get if the Nth volume slot is already taken or not.
 
 **Parameters**
 
--   `n` **[Number][69]** index of the slot
+-   `n` **[Number][88]** index of the slot
 
-Returns **[Boolean][73]** true if already taken (or out of range), false if free
+Returns **[Boolean][92]** true if already taken (or out of range), false if free
 
 ### mountVolumeN
 
@@ -499,8 +552,8 @@ the given volume will be shown
 
 **Parameters**
 
--   `n` **[Number][69]** the index of the slot to mount the volume on (most likely 0 or 1)
--   `volume` **[Volume][71]** the volume to mount
+-   `n` **[Number][88]** the index of the slot to mount the volume on (most likely 0 or 1)
+-   `volume` **[Volume][90]** the volume to mount
 
 ### mountVolumeOnFirstEmptySlot
 
@@ -508,9 +561,9 @@ Mounts a volume in the first slot available. Will do nothing if no slot is free.
 
 **Parameters**
 
--   `volume` **[Volume][71]** the volume to mount
+-   `volume` **[Volume][90]** the volume to mount
 
-Returns **[Boolean][73]** true if found an ampty slot to mount, false if could not mount it
+Returns **[Boolean][92]** true if found an ampty slot to mount, false if could not mount it
 
 ### resetPosition
 
@@ -523,7 +576,7 @@ the X direction, from a relative angle (=adding rotation to the current system)
 
 **Parameters**
 
--   `angle` **[Number][69]** in radian
+-   `angle` **[Number][88]** in radian
 
 ### rotateAroundYDominant
 
@@ -532,7 +585,7 @@ the Y direction, from a relative angle (=adding rotation to the current system)
 
 **Parameters**
 
--   `angle` **[Number][69]** in radian
+-   `angle` **[Number][88]** in radian
 
 ### rotateAroundZDominant
 
@@ -541,7 +594,7 @@ the Z direction, from a relative angle (=adding rotation to the current system)
 
 **Parameters**
 
--   `angle` **[Number][69]** in radian
+-   `angle` **[Number][88]** in radian
 
 ### setBlendingRatio
 
@@ -551,7 +604,7 @@ if closer to 1, the secondary volume is more visible
 
 **Parameters**
 
--   `r` **[Number][69]** ratio
+-   `r` **[Number][88]** ratio
 
 ### setBlendMethod
 
@@ -565,7 +618,7 @@ Available are:
 **Parameters**
 
 -   `method`  
--   `m` **[String][70]** method of blending
+-   `m` **[String][89]** method of blending
 
 ### setBrightnessSlotN
 
@@ -573,8 +626,8 @@ Set the brightness value to apply on the volume of the slot n.
 
 **Parameters**
 
--   `n` **[Number][69]** index of the volume slot
--   `b` **[Number][69]** value of the brightness, neutral being 0 (optional, default `0.`)
+-   `n` **[Number][88]** index of the volume slot
+-   `b` **[Number][88]** value of the brightness, neutral being 0 (optional, default `0.`)
 
 ### setCameraPosition
 
@@ -582,8 +635,8 @@ Set the position of a given camera, by its id
 
 **Parameters**
 
--   `cameraId` **[String][70]** the id of the camera
--   `position` **[Object][75]** ={x:100, y:100, z:100} - position of the camera (optional, default `{x:100,y:100,z:100}`)
+-   `cameraId` **[String][89]** the id of the camera
+-   `position` **[Object][94]** ={x:100, y:100, z:100} - position of the camera (optional, default `{x:100,y:100,z:100}`)
 
 ### setColormapOrientationSlotN
 
@@ -592,7 +645,7 @@ Set the orientation of the colormap used on the slot n, original or flipped
 **Parameters**
 
 -   `n`  
--   `orientation` **[Number][69]** 0 for original, 1 for fliped
+-   `orientation` **[Number][88]** 0 for original, 1 for fliped
 
 ### setColormapSlotN
 
@@ -600,8 +653,8 @@ Define the colormap the use on the texture loaded on the Nth slot
 
 **Parameters**
 
--   `n` **[Number][69]** index of the volume slot (most likely 0 or 1)
--   `cmName` **[String][70]** name of the colormap. Get the list of names with `.getListOfColormaps()`
+-   `n` **[Number][88]** index of the volume slot (most likely 0 or 1)
+-   `cmName` **[String][89]** name of the colormap. Get the list of names with `.getListOfColormaps()`
 
 ### setContrastSlotN
 
@@ -609,9 +662,9 @@ Set the contrast value to apply on the volume of the slot n.
 
 **Parameters**
 
--   `n` **[Number][69]** index of the volume slot
+-   `n` **[Number][88]** index of the volume slot
 -   `c`   (optional, default `1.`)
--   `b` **[Number][69]** value of the cotrast, neutral being 1
+-   `b` **[Number][88]** value of the cotrast, neutral being 1
 
 ### setPlaneSystemEulerAngle
 
@@ -619,9 +672,9 @@ Set the Euler angle of the plane system
 
 **Parameters**
 
--   `x` **[Number][69]** Rotation on x
--   `y` **[Number][69]** Rotation on y
--   `z` **[Number][69]** Rotation on z
+-   `x` **[Number][88]** Rotation on x
+-   `y` **[Number][88]** Rotation on y
+-   `z` **[Number][88]** Rotation on z
 
 ### setPosition
 
@@ -630,7 +683,7 @@ Not each position property have to be updated.
 
 **Parameters**
 
--   `position` **[Object][75]** The new position (optional, default `{x:undefined,y:undefined,z:undefined}`)
+-   `position` **[Object][94]** The new position (optional, default `{x:undefined,y:undefined,z:undefined}`)
 
 ### setTimeIndexSlotN
 
@@ -639,8 +692,8 @@ If the time index is higher than the duration of the volume, it will loop with a
 
 **Parameters**
 
--   `n` **[Number][69]** index of the volume slot
--   `t` **[Number][69]** the time index
+-   `n` **[Number][88]** index of the volume slot
+-   `t` **[Number][88]** the time index
 
 ### translateAlongXDominant
 
@@ -648,7 +701,7 @@ Translate the plane system along the dominant X direction
 
 **Parameters**
 
--   `d` **[Number][69]** the distance to move along this vector (can be negative to move back)
+-   `d` **[Number][88]** the distance to move along this vector (can be negative to move back)
 
 ### translateAlongYDominant
 
@@ -656,7 +709,7 @@ Translate the plane system along the dominant Y direction
 
 **Parameters**
 
--   `d` **[Number][69]** the distance to move along this vector (can be negative to move back)
+-   `d` **[Number][88]** the distance to move along this vector (can be negative to move back)
 
 ### translateAlongZDominant
 
@@ -664,7 +717,7 @@ Translate the plane system along the dominant X direction
 
 **Parameters**
 
--   `d` **[Number][69]** the distance to move along this vector (can be negative to move back)
+-   `d` **[Number][88]** the distance to move along this vector (can be negative to move back)
 
 ### unmountVolumeN
 
@@ -702,13 +755,13 @@ Returns **\[type]** [description]
 
 Get a list of all available matrices for this volume, as strings
 
-Returns **[Array][74]** 
+Returns **[Array][93]** 
 
 ### getId
 
 Get the id of this volume
 
-Returns **[String][70]** the id
+Returns **[String][89]** the id
 
 ### getImage3D
 
@@ -722,7 +775,7 @@ Get the transformation matrix with the given name
 
 **Parameters**
 
--   `name` **[String][70]** name of the transform (most likely "v2t" or "v2t_center")
+-   `name` **[String][89]** name of the transform (most likely "v2t" or "v2t_center")
 
 Returns **BABYLON.Matrix** the matrix
 
@@ -737,7 +790,7 @@ Returns **BABYLON.RawTexture3D** the texture corresponding to this volume
 Get the number of time samples. fMRI (or diffusion) will have more than one
 while structural MRI will usually have only one.
 
-Returns **[Number][69]** 
+Returns **[Number][88]** 
 
 ### getValue
 
@@ -749,10 +802,10 @@ This just gives the value of the closest voxel.
 
 **Parameters**
 
--   `position` **[Object][75]** position in world coordinates (optional, default `{x:0,y:0,z:0}`)
--   `time` **[Number][69]** time index (makes sense only for time series) (optional, default `0`)
+-   `position` **[Object][94]** position in world coordinates (optional, default `{x:0,y:0,z:0}`)
+-   `time` **[Number][88]** time index (makes sense only for time series) (optional, default `0`)
 
-Returns **[Number][69]** the voxel intensity
+Returns **[Number][88]** the voxel intensity
 
 ## ColormapManager
 
@@ -765,7 +818,7 @@ and is not kept in memory.
 **Parameters**
 
 -   `scene` **BABYLON.Scene** the babylonjs scene (necessary to generate textures)
--   `nbSamples` **[Number][69]** number of samples generated per colormap (optional, default `512`)
+-   `nbSamples` **[Number][88]** number of samples generated per colormap (optional, default `512`)
 
 ### getColormapCanvas
 
@@ -774,7 +827,7 @@ This canvas elem can directly be `append` to some div.
 
 **Parameters**
 
--   `name` **[String][70]** the name of the colormap (default: 'default') (optional, default `'default'`)
+-   `name` **[String][89]** the name of the colormap (default: 'default') (optional, default `'default'`)
 
 Returns **Canvas** the Canvas object, of height 1px and width 512px (this depends on the default)
 
@@ -782,7 +835,7 @@ Returns **Canvas** the Canvas object, of height 1px and width 512px (this depend
 
 Get the list of colormap names
 
-Returns **[Array][74]** a list of Strings
+Returns **[Array][93]** a list of Strings
 
 [1]: #quickvoxel-core
 
@@ -916,20 +969,58 @@ Returns **[Array][74]** a list of Strings
 
 [66]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html
 
-[67]: ./examples/simpleFile.html
+[67]: http://www.pixpipe.io/quickvoxelcore/examples/simpleFile.html
 
-[68]: #volumecollection
+[68]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html
 
-[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[69]: http://www.pixpipe.io/quickvoxelcore/examples/translate.html
 
-[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[70]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/translate.html
 
-[71]: #volume
+[71]: http://www.pixpipe.io/quickvoxelcore/examples/oblique.html
 
-[72]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[72]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique.html
 
-[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[73]: http://www.pixpipe.io/quickvoxelcore/examples/colormaps.html
 
-[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[74]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/colormaps.html
 
-[75]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[75]: http://www.pixpipe.io/quickvoxelcore/examples/oblique2.html
+
+[76]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique2.html
+
+[77]: http://www.pixpipe.io/quickvoxelcore/examples/double.html
+
+[78]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/double.html
+
+[79]: http://www.pixpipe.io/quickvoxelcore/examples/time.html
+
+[80]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html
+
+[81]: http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html
+
+[82]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html
+
+[83]: http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html
+
+[84]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html
+
+[85]: http://www.pixpipe.io/quickvoxelcore/doc/
+
+[86]: http://www.pixpipe.io/quickvoxelcore/doc/#renderengine
+
+[87]: #volumecollection
+
+[88]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+[89]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[90]: #volume
+
+[91]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+
+[92]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+
+[93]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[94]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

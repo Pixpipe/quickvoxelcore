@@ -11,14 +11,29 @@ Features:
 - Adjust **contrast** and **brightness**
 
 Requirement:
-- A modern web browser, compatible with WebGL2 (Chrome is ok for some versions)
+- A modern web browser, compatible with WebGL2 (recent Chrome or Firefox)
 
 Quickvoxel Core is backed by [Pixpipe](https://github.com/Pixpipe/pixpipejs) for decoding volume files and process the data, and by [BabylonJS](https://www.babylonjs.com/) for the WebGL2 rendering.
 
 Since this project is a **core only**, it is not bound to any frontend framework and needs to be sugar coated with some UI elements to provide a proper user interaction. You can find a minimal 10-lines example [here](http://www.pixpipe.io/quickvoxelcore/examples/simple.html) ([source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html)).  
 A lot of additional methods to do more interesting things with *Quickvoxel* are implemented in the core and need to be tied to UI element to be fully usable. We'll see that in the following part.
 
+# Demo
+(Most of the demos are less than 20 lines)
+- [Simple with loading from URL](http://www.pixpipe.io/quickvoxelcore/examples/simple.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html)
+- [Simple with loading from a local file](http://www.pixpipe.io/quickvoxelcore/examples/simpleFile.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html)
+- [Translate the plane](http://www.pixpipe.io/quickvoxelcore/examples/translate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/translate.html)
+- [Oblique plane](http://www.pixpipe.io/quickvoxelcore/examples/oblique.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique.html)
+- [With colormaps](http://www.pixpipe.io/quickvoxelcore/examples/colormaps.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/colormaps.html)
+- [Oblique plane, animated](http://www.pixpipe.io/quickvoxelcore/examples/oblique2.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique2.html)
+- [Two volumes + blending + colormap](http://www.pixpipe.io/quickvoxelcore/examples/double.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/double.html)
+- [+ time series animated](http://www.pixpipe.io/quickvoxelcore/examples/time.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html)
+- [+ animated translation](http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html)
+- [+ animated oblique](http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html)
 
+
+# API documentation
+[HERE](http://www.pixpipe.io/quickvoxelcore/doc/)
 
 
 # Install
@@ -165,4 +180,36 @@ volumeCollection.on("volumeReady", function(volume){
 
 ```
 
-Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the [example here](./examples/simpleFile.html). Then, the logic for mounting on a slot is the same.
+Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the [example here](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html). Then, the logic for mounting on a slot is the same.
+
+
+# Going Further
+The `RenderEngine` object has a lot of methods that can be used to tweak your visualization. Do no hesitate to consult the [API doc conserning the RenderEngine](http://www.pixpipe.io/quickvoxelcore/doc/#renderengine) to make sure you use them properly.  
+
+Here is a list of what you can do:
+- show/hide a volume mounted on a slot
+- change the blending method between two volumes
+- mount/unmount a volume on/from a given slot
+- apply a colormap on a given slot
+- get the list of colormaps names and corresponding canvas for UI purpose
+- display a reversed colormap
+- change the brightness on a given slot
+- change the contrast on a given slot
+- change the time index of a volume on a given slot (time series)
+- rotate with a relative angle around the normal of a plane from the plane system (1 plane remains fixed)
+- translate along the normal of a plane from the plane system
+- apply an absolute rotation in world coordinates Euler angles
+- set the position of the plane system in absolute world coordinates
+- [experimental] change the position of the camera (incomplete, `up` vector needs to be set too)
+
+
+# TODO
+In what is probably the order of future developments:
+- Check if WebGL2 is enabled
+- Add XYZ axis of a grid system to know where we are
+- Masking capabilities (as a 3rd slot that has special features)
+- Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)
+- Try to build 3D textures without having to perform a conversion from float32 to uint8
+- Add 3 cameras that are always facing each of the ortho planes
+- Gives the possibility to change the camera
+- Have a split view options with the 4 camera (3 orthos + 1 perspective)

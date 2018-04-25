@@ -501,11 +501,27 @@
 </ul>
 <p>Requirement:</p>
 <ul>
-<li>A modern web browser, compatible with WebGL2 (Chrome is ok for some versions)</li>
+<li>A modern web browser, compatible with WebGL2 (recent Chrome or Firefox)</li>
 </ul>
 <p>Quickvoxel Core is backed by <a href="https://github.com/Pixpipe/pixpipejs">Pixpipe</a> for decoding volume files and process the data, and by <a href="https://www.babylonjs.com/">BabylonJS</a> for the WebGL2 rendering.</p>
 <p>Since this project is a <strong>core only</strong>, it is not bound to any frontend framework and needs to be sugar coated with some UI elements to provide a proper user interaction. You can find a minimal 10-lines example <a href="http://www.pixpipe.io/quickvoxelcore/examples/simple.html">here</a> (<a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html">source</a>).<br>
 A lot of additional methods to do more interesting things with <em>Quickvoxel</em> are implemented in the core and need to be tied to UI element to be fully usable. We'll see that in the following part.</p>
+<h1>Demo</h1>
+<p>(Most of the demos are less than 20 lines)</p>
+<ul>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/simple.html">Simple with loading from URL</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/simpleFile.html">Simple with loading from a local file</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/translate.html">Translate the plane</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/translate.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/oblique.html">Oblique plane</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/colormaps.html">With colormaps</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/colormaps.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/oblique2.html">Oblique plane, animated</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique2.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/double.html">Two volumes + blending + colormap</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/double.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/time.html">+ time series animated</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html">+ animated translation</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html">+ animated oblique</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html">source</a></li>
+</ul>
+<h1>API documentation</h1>
+<p><a href="http://www.pixpipe.io/quickvoxelcore/doc/">HERE</a></p>
 <h1>Install</h1>
 <p>Since <strong>Quickvoxel Core</strong> will most likely be used as a dependency, it can be used in multiple ways:</p>
 <p><strong>From a simple HTML page:</strong></p>
@@ -622,7 +638,38 @@ volumeCollection.on(<span class="hljs-string">"volumeReady"</span>, <span class=
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"All volume slots are taken on the render engine, make some space before rendering this volume."</span>);
   }
 })</pre>
-<p>Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the <a href="./examples/simpleFile.html">example here</a>. Then, the logic for mounting on a slot is the same.</p>
+<p>Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html">example here</a>. Then, the logic for mounting on a slot is the same.</p>
+<h1>Going Further</h1>
+<p>The <code>RenderEngine</code> object has a lot of methods that can be used to tweak your visualization. Do no hesitate to consult the <a href="http://www.pixpipe.io/quickvoxelcore/doc/#renderengine">API doc conserning the RenderEngine</a> to make sure you use them properly.  </p>
+<p>Here is a list of what you can do:</p>
+<ul>
+<li>show/hide a volume mounted on a slot</li>
+<li>change the blending method between two volumes</li>
+<li>mount/unmount a volume on/from a given slot</li>
+<li>apply a colormap on a given slot</li>
+<li>get the list of colormaps names and corresponding canvas for UI purpose</li>
+<li>display a reversed colormap</li>
+<li>change the brightness on a given slot</li>
+<li>change the contrast on a given slot</li>
+<li>change the time index of a volume on a given slot (time series)</li>
+<li>rotate with a relative angle around the normal of a plane from the plane system (1 plane remains fixed)</li>
+<li>translate along the normal of a plane from the plane system</li>
+<li>apply an absolute rotation in world coordinates Euler angles</li>
+<li>set the position of the plane system in absolute world coordinates</li>
+<li>[experimental] change the position of the camera (incomplete, <code>up</code> vector needs to be set too)</li>
+</ul>
+<h1>TODO</h1>
+<p>In what is probably the order of future developments:</p>
+<ul>
+<li>Check if WebGL2 is enabled</li>
+<li>Add XYZ axis of a grid system to know where we are</li>
+<li>Masking capabilities (as a 3rd slot that has special features)</li>
+<li>Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)</li>
+<li>Try to build 3D textures without having to perform a conversion from float32 to uint8</li>
+<li>Add 3 cameras that are always facing each of the ortho planes</li>
+<li>Gives the possibility to change the camera</li>
+<li>Have a split view options with the 4 camera (3 orthos + 1 perspective)</li>
+</ul>
 
   
 </section>
@@ -1213,74 +1260,6 @@ and added to the collection with a given index.</p>
 
   
 
-  <p>Get the volume of the given id</p>
-
-
-  <div class='pre p1 fill-light mt0'>getVolume(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): (<a href="#volume">Volume</a> | null)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    unique id of the volume within the collection
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code>(<a href="#volume">Volume</a> | null)</code>:
-        the volume if existing, or null if not existing
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='volumecollectiongetvolume'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getVolume(id)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
   <p>Get the <code>Volume</code> with the given id</p>
 
 
@@ -1322,6 +1301,74 @@ and added to the collection with a given index.</p>
         the Volume instance with such id, or 
 <code>null</code>
  if not found
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='volumecollectiongetvolume'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>getVolume(id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the volume of the given id</p>
+
+
+  <div class='pre p1 fill-light mt0'>getVolume(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): (<a href="#volume">Volume</a> | null)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
+	    unique id of the volume within the collection
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>(<a href="#volume">Volume</a> | null)</code>:
+        the volume if existing, or null if not existing
 
       
     
