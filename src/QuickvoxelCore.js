@@ -2,11 +2,15 @@ import { RenderEngine } from './RenderEngine.js'
 import { VolumeCollection } from './VolumeCollection.js'
 
 /**
- * [QuickvoxelCore description]
+ * Build an instance of QuickvoxelCore to initialize Quickvoxel Core.
+ * Once constructed, the methods `.getVolumeCollection()` and `.getRenderEngine()`
+ * can be called to provide more features.
  */
 class QuickvoxelCore {
   /**
-   * [constructor description]
+   * Constructor of the entry point of Quickvoxel Core.
+   * This is probably the only constructor of the project to be called.
+   * Takes a canvas element (DOM object) as argument to render the volumes.
    */
   constructor ( canvasElem ) {
     this._renderEngine = new RenderEngine( canvasElem );
@@ -48,8 +52,8 @@ class QuickvoxelCore {
 
 
   /**
-   * Get the volume collection, to access to some features such as adding a volume
-   * @return {[type]} [description]
+   * Get the volume collection, to access to some features such as adding/removing a volume
+   * @return {VolumeCollection}
    */
   getVolumeCollection () {
     return this._volumeCollection;
@@ -58,7 +62,7 @@ class QuickvoxelCore {
 
   /**
    * Get the rendering engine to perform some 3D tasks, such as interacting with the view
-   * @return {[type]} [description]
+   * @return {RenderingEngine}
    */
   getRenderEngine () {
     return this._renderEngine;

@@ -1,6 +1,13 @@
 import pixpipe from 'pixpipe'
 import * as BABYLON from 'babylonjs/es6.js'
 
+/**
+ * An instance of ColormapManager is used by RenderEngine so generate colormaps to apply on the volume.
+ * Several types of colormaps are available, they are generated as `pixpipe.Image2D`, from which are made
+ * `BABYLON.RawTexture` (2D) and HTML5 `Canvas`. The texture is to be sent to the shader while the canvas
+ * can be used for UI purpose. Note that the original `pixpipe.Image2D` colormap is just used temporary
+ * and is not kept in memory.
+ */
 class ColormapManager {
 
   /**

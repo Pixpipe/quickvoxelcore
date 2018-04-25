@@ -4,6 +4,9 @@ import pixpipe from 'pixpipe'
 import { Volume } from './Volume.js'
 
 /**
+ * The VolumeCollection is automatically initialized by the constructor of QuickVoxelCore.
+ * When the QuickVoxelCore object is created, the VolumeCollection can be fetched to perform actions directly on it.
+ * 
  * A instance of VolumeCollection manages and identifies Volume instances.
  * A `Volume` can be added to the collection using `.addVolumeFromUrl()` and `.addVolumeFromFile()`.
  * Once one of these two method is called, a `Volume` instance is created (itself generating a 3D texture)

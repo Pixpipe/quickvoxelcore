@@ -12,7 +12,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
     "dev": "serve . & rollup -w -c rollup.config.dev.js",
-    "doc": "documentation build src/main.js --project-name 'Quickvoxel Core' --sort-order 'alpha' -o ./doc/ -f html; documentation build src/main.js --project-name 'Quickvoxel Core' --sort-order 'alpha' -f md > documentation.md",
+    "doc": "documentation build src/main.js --project-name 'Quickvoxel Core' --config ./docgen/config.yml --sort-order 'alpha' --theme ./docgen/custom_theme/ -o ./doc/ -f html; documentation build src/main.js --project-name 'Quickvoxel Core' --sort-order 'alpha' -f md > documentation.md",
     "lintfix": "standard --fix src/**/*.js",
     "lint": "standard src/**/*.js"
   },

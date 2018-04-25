@@ -5,7 +5,10 @@ import { ColormapManager } from './ColormapManager.js'
 import { CONSTANTS } from './constants.js'
 
 /**
- * [RenderEngine description]
+ * The RenderEngine is automatically initialized by the constructor of QuickVoxelCore.
+ * The engine in in charge of the visualization part by initializing the WebGL environment,
+ * sending data to shaders, and updating them. Once the QuickVoxelCore object is created,
+ * the RenderEngine can be fetched to call methods from it directly.
  */
 class RenderEngine {
   /**
@@ -20,6 +23,8 @@ class RenderEngine {
     this._canvas = canvasElem
     this._engine = new BABYLON.Engine(this._canvas, true)
     this._scene = new BABYLON.Scene(this._engine)
+    this._scene.clearColor = new BABYLON.Color3(0.92, 0.92, 0.92)
+
     this._colormapManager = new ColormapManager( this._scene )
     this._cameras = {
       main: this._initMainCamera(),
@@ -501,7 +506,7 @@ class RenderEngine {
    * @return {BABYLON.Vector3} the normal vector (as a clone)
    */
   getXDominantPlaneNormal () {
-    return this._getDominantPlaneNormal( new BABYLON.Vector3(1, 0, 0) )
+    return this._getDominantPlaneNormal( new BABYLON.Vector3(-1, 0, 0) )
   }
 
 
@@ -560,6 +565,38 @@ class RenderEngine {
     let axis = this.getZDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
+  }
+
+
+  /**
+   * Translate the plane system along the dominant X direction
+   * @param  {Number} d - the distance to move along this vector (can be negative to move back)
+   */
+  translateAlongXDominant (d) {
+    let dominantVector = this.getXDominantPlaneNormal()
+    let translation = dominantVector.multiplyByFloats( d, d, d  )
+    this._planeSystem.position.addInPlace( translation )
+  }
+
+  /**
+   * Translate the plane system along the dominant Y direction
+   * @param  {Number} d - the distance to move along this vector (can be negative to move back)
+   */
+  translateAlongYDominant (d) {
+    let dominantVector = this.getYDominantPlaneNormal()
+    let translation = dominantVector.multiplyByFloats( d, d, d  )
+    this._planeSystem.position.addInPlace( translation )
+  }
+
+
+  /**
+   * Translate the plane system along the dominant X direction
+   * @param  {Number} d - the distance to move along this vector (can be negative to move back)
+   */
+  translateAlongZDominant (d) {
+    let dominantVector = this.getZDominantPlaneNormal()
+    let translation = dominantVector.multiplyByFloats( d, d, d )
+    this._planeSystem.position.addInPlace( translation )
   }
 
 
