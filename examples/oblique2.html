@@ -1,0 +1,66 @@
+<html>
+<head>
+  <title>Oblique</title>
+
+  <style>
+  body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+
+  a {
+    text-decoration: none;
+    color: #FF91D7;
+  }
+
+  #renderCanvas {
+    width: 100%;
+    height: 100%;
+  }
+
+
+  </style>
+
+</head>
+<body>
+  <!-- importing the automatically build module -->
+  <script src="../dist/quickvoxelcore.es6.js"></script>
+
+  <canvas id="renderCanvas"></canvas>
+
+  <script>
+    let canvas = document.getElementById("renderCanvas")
+
+    // the QuickvoxelCore instance is the entry point
+    let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+    // for future access to the volume collection
+    let volumeCollection = qvc.getVolumeCollection();
+    // for future access the render engine
+    let renderEngine = qvc.getRenderEngine();
+
+    let timeIndex = 0
+
+    // moving around
+    setInterval(function(){
+      let angle = Math.cos(timeIndex/100) * Math.PI/8
+      renderEngine.setPlaneSystemEulerAngle(angle, 0, 0)
+      timeIndex++
+    }, 10)
+
+    volumeCollection.addVolumeFromUrl( "../data/structural.nii.gz" );
+
+    // mount the volume when it's ready!
+    volumeCollection.on("volumeReady", function(volume){
+      let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+      if( !couldMount ){
+        console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+      }
+    })
+
+
+  </script>
+
+</body>
+</html>

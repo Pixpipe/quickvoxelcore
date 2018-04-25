@@ -19,26 +19,150 @@ Since this project is a **core only**, it is not bound to any frontend framework
 A lot of additional methods to do more interesting things with *Quickvoxel* are implemented in the core and need to be tied to UI element to be fully usable. We'll see that in the following part.
 
 
+
+
 # Install
 Since **Quickvoxel Core** will most likely be used as a dependency, it can be used in multiple ways:
 
 **From a simple HTML page:**
-```HTML
+```html
 <!-- ES6 version -->
 <script src="quickvoxelcore/dist/quickvoxelcore.es6.js"></script>
-```
 
-```HTML
-<!-- ES5 version -->
+<!-- or ES5 version -->
 <script src="quickvoxelcore/dist/quickvoxelcore.js"></script>
+
+<!-- or ES5 minified version -->
+<script src="quickvoxelcore/dist/quickvoxelcore.min.js"></script>
 ```
 
 **From another ES module:**
 ```bash
-npm install quickvoxelcore
+npm install quickvoxelcore --save
 ```
+
 Then, from your module:
-```Javascript
+```javascript
 // import the ES5 version
 import quickvoxelcore from 'quickvoxelcore'
+
+// or import the ES6 version
+import quickvoxelcore from 'quickvoxelcore/dist/quickvoxelcore.es6.js'
 ```
+
+# How To
+## Getting started
+To start, *QuickvoxelCore* needs an HTML5 canvas element:
+```html
+<html>
+<head>
+  <title>QuickvoxelCore Test</title>
+
+  <style>
+  body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+
+  #renderCanvas {
+    width: 100%;
+    height: 100%;
+  }
+  </style>
+
+</head>
+<body>
+  <script src="../dist/quickvoxelcore.es6.js"></script>
+
+  <canvas id="renderCanvas"></canvas>
+
+  <script>
+    let canvas = document.getElementById("renderCanvas")
+    // ...
+  </script>
+
+</body>
+</html>
+```
+
+No matter the way you pick (simple HTML page or ES module to be bundled), the features are accessible from the `quickvoxelcore` namespace:
+```javascript
+let canvas = document.getElementById("renderCanvas")
+
+let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
+```
+
+The constructor `quickvoxelcore.QuickvoxelCore(...)` initializes several internal objects, two important ones can be fetched: the `VolumeCollection` and the `RenderEngine`:
+
+```javascript
+// ...
+
+let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
+
+let volumeCollection = qvc.getVolumeCollection()
+let renderEngine = qvc.getRenderEngine()
+```
+## Interlude: the VolumeCollection
+The `VolumeCollection` instance allows you to add new volume from file URL or from a file dialog. Once added, a volume file will automatically:
+- be given a unique ID within the collection
+- be parsed by Pixpipe
+- create a 3D texture for later display
+
+The methods you will use from your `VolumeCollection` instance are:
+- `.addVolumeFromUrl( String )` to add a volume from a URL
+- `.addVolumeFromFile( File)` to add a volume from a file in the local filesystem
+
+In addition, `VolumeCollection` provides some events so that actions can be triggered during the lifecycle of a `Volume`:
+- `volumeAdded` is called when the volume is parsed and added to the collection. But its webGL texture is not ready yet! The callbacks attached to this event will have the volume object as argument.
+- `volumeReady`called after `volumeAdded`, at the moment the added volume has its WegGL 3D texture ready. At this stage, a volume is ready to be displayed.The callbacks attached to this event will have the volume object as argument.
+- `volumeRemoved` is called when a volume is removed from the collection with the method `.removeVolume(id)`. The callbacks attached to this event will have the volume id (string) as argument.
+- `errorAddingVolume` is called when a volume failed to be added with `.addVolumeFromUrl()` and `.addVolumeFromFile()`. The callbacks attached to this event will have the url or the HTML5 File object as argument.
+
+To each event can be attached multiple callbacks, they will simply be called successively in the order the were declared. To associate a callback function to an event, just do:
+
+```javascript
+myVolumeCollection.on("volumeReady", function(volume){
+    // Do something with this volume
+})
+```
+In general, events are most likely to be defined from the main scope or from where you also have access to the `RenderEngine` instance.
+
+## Interlude: the RenderEngine
+The `RenderEngine` instance is in charge of displaying the volume from the collection, once they are loaded. It also comes with all the features to rotates/translates the three orthogonal planes (referred as `_planeSystem` in the source), apply a colormaps, change brightness/contrast and deal with blending.
+
+A `RenderEngine` can display only 2 volumes at the same time. The terminology used in the doc and source is
+> Two **slots** are available to **mount** volumes on the render engine. Those slots are called **primary** and **secondary**.
+
+Then, some volume can be *unmounted* from a given slot and another volume from the volume collection can be *mounted*.
+
+Rendering features such as **colormap**, **contrast** and **brightness** are associated to *slots* and not to *volumes*. This means, if you use the *primary* slot to mount a structural MRI and the *secondary* slot to mount a functional MRI, and then adjust the brightness/contrast/colormap of the secondary slot, mounting another fMRI instead of the one in place will not change those settings.
+
+*Note: there are plans to add a additional volume for masking*
+
+## Mount a volume once it's ready
+Here is how to load a volume from a URL (that has to comply with CORS, i.e. be in the same server as Quickvoxel)
+
+```javascript
+// ...
+
+volumeCollection.addVolumeFromUrl( "./data/structural.nii.gz" );
+
+// mount the volume when it's ready!
+volumeCollection.on("volumeReady", function(volume){
+  // to mount the loaded volume on a specific engine slot.
+  // (if a volume is already on this slot, it's unmounted and replaced by the new one)
+  renderEngine.mountVolumeN( 0, volume )
+
+  // OR, you can just mount it on the first slot available
+  let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+
+  if( !couldMount ){
+    console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+  }
+})
+
+```
+
+Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the [example here](./examples/simpleFile.html). Then, the logic for mounting on a slot is the same.

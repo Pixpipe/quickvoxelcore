@@ -322,6 +322,18 @@
                       </a></li>
                       
                       <li><a
+                        href='#renderenginesetposition'
+                        class='regular pre-open'>
+                        setPosition
+                      </a></li>
+                      
+                      <li><a
+                        href='#renderenginesettimeindexslotn'
+                        class='regular pre-open'>
+                        setTimeIndexSlotN
+                      </a></li>
+                      
+                      <li><a
                         href='#renderenginetranslatealongxdominant'
                         class='regular pre-open'>
                         translateAlongXDominant
@@ -343,12 +355,6 @@
                         href='#renderengineunmountvolumen'
                         class='regular pre-open'>
                         unmountVolumeN
-                      </a></li>
-                      
-                      <li><a
-                        href='#renderengineupdateplanesystemposition'
-                        class='regular pre-open'>
-                        updatePlaneSystemPosition
                       </a></li>
                       
                     </ul>
@@ -483,7 +489,140 @@
 
   
     <p><img src="./assets/images/qv_logo_horizontal.png"></p>
-<p>[here goes the readme]</p>
+<p><strong>Quickvoxel Core</strong> is a pure Javascript toolkit for volumetric visualization of neuro files in the web browser. Everything that happens in Quickvoxel is strictly client-side, without the need of an active server (i.e. can run on a Github page)</p>
+<p>Features:</p>
+<ul>
+<li>Open and decodes <strong>NIfTI</strong>, <strong>MINC2</strong>, and <strong>MGH</strong> (experimental)</li>
+<li>Display volume in world/subject coordinates to align registered volumes</li>
+<li><strong>Obliques</strong></li>
+<li>Can <strong>blend</strong> two volumes with different methods</li>
+<li>Apply <strong>colormaps</strong>  (<a href="http://www.pixpipe.io/pixpipejs/examples/colormap.html">44 available</a>)</li>
+<li>Adjust <strong>contrast</strong> and <strong>brightness</strong></li>
+</ul>
+<p>Requirement:</p>
+<ul>
+<li>A modern web browser, compatible with WebGL2 (Chrome is ok for some versions)</li>
+</ul>
+<p>Quickvoxel Core is backed by <a href="https://github.com/Pixpipe/pixpipejs">Pixpipe</a> for decoding volume files and process the data, and by <a href="https://www.babylonjs.com/">BabylonJS</a> for the WebGL2 rendering.</p>
+<p>Since this project is a <strong>core only</strong>, it is not bound to any frontend framework and needs to be sugar coated with some UI elements to provide a proper user interaction. You can find a minimal 10-lines example <a href="http://www.pixpipe.io/quickvoxelcore/examples/simple.html">here</a> (<a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html">source</a>).<br>
+A lot of additional methods to do more interesting things with <em>Quickvoxel</em> are implemented in the core and need to be tied to UI element to be fully usable. We'll see that in the following part.</p>
+<h1>Install</h1>
+<p>Since <strong>Quickvoxel Core</strong> will most likely be used as a dependency, it can be used in multiple ways:</p>
+<p><strong>From a simple HTML page:</strong></p>
+<pre class='hljs'><span class="hljs-comment">&lt;!-- ES6 version --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"quickvoxelcore/dist/quickvoxelcore.es6.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- or ES5 version --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"quickvoxelcore/dist/quickvoxelcore.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- or ES5 minified version --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"quickvoxelcore/dist/quickvoxelcore.min.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></pre>
+<p><strong>From another ES module:</strong></p>
+<pre class='hljs'>npm install quickvoxelcore --save</pre>
+<p>Then, from your module:</p>
+<pre class='hljs'><span class="hljs-comment">// import the ES5 version</span>
+<span class="hljs-keyword">import</span> quickvoxelcore <span class="hljs-keyword">from</span> <span class="hljs-string">'quickvoxelcore'</span>
+
+<span class="hljs-comment">// or import the ES6 version</span>
+<span class="hljs-keyword">import</span> quickvoxelcore <span class="hljs-keyword">from</span> <span class="hljs-string">'quickvoxelcore/dist/quickvoxelcore.es6.js'</span></pre>
+<h1>How To</h1>
+<h2>Getting started</h2>
+<p>To start, <em>QuickvoxelCore</em> needs an HTML5 canvas element:</p>
+<pre class='hljs'><span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>QuickvoxelCore Test<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+  <span class="hljs-selector-tag">body</span> {
+    <span class="hljs-attribute">overflow</span>: hidden;
+    <span class="hljs-attribute">width</span>: <span class="hljs-number">100%</span>;
+    <span class="hljs-attribute">height</span>: <span class="hljs-number">100%</span>;
+    <span class="hljs-attribute">margin</span>: <span class="hljs-number">0</span>;
+  }
+
+  <span class="hljs-selector-id">#renderCanvas</span> {
+    <span class="hljs-attribute">width</span>: <span class="hljs-number">100%</span>;
+    <span class="hljs-attribute">height</span>: <span class="hljs-number">100%</span>;
+  }
+  </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../dist/quickvoxelcore.es6.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">canvas</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"renderCanvas"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">canvas</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+    <span class="hljs-keyword">let</span> canvas = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"renderCanvas"</span>)
+    <span class="hljs-comment">// ...</span>
+  </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></pre>
+<p>No matter the way you pick (simple HTML page or ES module to be bundled), the features are accessible from the <code>quickvoxelcore</code> namespace:</p>
+<pre class='hljs'><span class="hljs-keyword">let</span> canvas = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"renderCanvas"</span>)
+
+<span class="hljs-keyword">let</span> qvc = <span class="hljs-keyword">new</span> quickvoxelcore.QuickvoxelCore( canvas )</pre>
+<p>The constructor <code>quickvoxelcore.QuickvoxelCore(...)</code> initializes several internal objects, two important ones can be fetched: the <code>VolumeCollection</code> and the <code>RenderEngine</code>:</p>
+<pre class='hljs'><span class="hljs-comment">// ...</span>
+
+<span class="hljs-keyword">let</span> qvc = <span class="hljs-keyword">new</span> quickvoxelcore.QuickvoxelCore( canvas )
+
+<span class="hljs-keyword">let</span> volumeCollection = qvc.getVolumeCollection()
+<span class="hljs-keyword">let</span> renderEngine = qvc.getRenderEngine()</pre>
+<h2>Interlude: the VolumeCollection</h2>
+<p>The <code>VolumeCollection</code> instance allows you to add new volume from file URL or from a file dialog. Once added, a volume file will automatically:</p>
+<ul>
+<li>be given a unique ID within the collection</li>
+<li>be parsed by Pixpipe</li>
+<li>create a 3D texture for later display</li>
+</ul>
+<p>The methods you will use from your <code>VolumeCollection</code> instance are:</p>
+<ul>
+<li><code>.addVolumeFromUrl( String )</code> to add a volume from a URL</li>
+<li><code>.addVolumeFromFile( File)</code> to add a volume from a file in the local filesystem</li>
+</ul>
+<p>In addition, <code>VolumeCollection</code> provides some events so that actions can be triggered during the lifecycle of a <code>Volume</code>:</p>
+<ul>
+<li><code>volumeAdded</code> is called when the volume is parsed and added to the collection. But its webGL texture is not ready yet! The callbacks attached to this event will have the volume object as argument.</li>
+<li><code>volumeReady</code>called after <code>volumeAdded</code>, at the moment the added volume has its WegGL 3D texture ready. At this stage, a volume is ready to be displayed.The callbacks attached to this event will have the volume object as argument.</li>
+<li><code>volumeRemoved</code> is called when a volume is removed from the collection with the method <code>.removeVolume(id)</code>. The callbacks attached to this event will have the volume id (string) as argument.</li>
+<li><code>errorAddingVolume</code> is called when a volume failed to be added with <code>.addVolumeFromUrl()</code> and <code>.addVolumeFromFile()</code>. The callbacks attached to this event will have the url or the HTML5 File object as argument.</li>
+</ul>
+<p>To each event can be attached multiple callbacks, they will simply be called successively in the order the were declared. To associate a callback function to an event, just do:</p>
+<pre class='hljs'>myVolumeCollection.on(<span class="hljs-string">"volumeReady"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">volume</span>)</span>{
+    <span class="hljs-comment">// Do something with this volume</span>
+})</pre>
+<p>In general, events are most likely to be defined from the main scope or from where you also have access to the <code>RenderEngine</code> instance.</p>
+<h2>Interlude: the RenderEngine</h2>
+<p>The <code>RenderEngine</code> instance is in charge of displaying the volume from the collection, once they are loaded. It also comes with all the features to rotates/translates the three orthogonal planes (referred as <code>_planeSystem</code> in the source), apply a colormaps, change brightness/contrast and deal with blending.</p>
+<p>A <code>RenderEngine</code> can display only 2 volumes at the same time. The terminology used in the doc and source is</p>
+<blockquote>
+<p>Two <strong>slots</strong> are available to <strong>mount</strong> volumes on the render engine. Those slots are called <strong>primary</strong> and <strong>secondary</strong>.</p>
+</blockquote>
+<p>Then, some volume can be <em>unmounted</em> from a given slot and another volume from the volume collection can be <em>mounted</em>.</p>
+<p>Rendering features such as <strong>colormap</strong>, <strong>contrast</strong> and <strong>brightness</strong> are associated to <em>slots</em> and not to <em>volumes</em>. This means, if you use the <em>primary</em> slot to mount a structural MRI and the <em>secondary</em> slot to mount a functional MRI, and then adjust the brightness/contrast/colormap of the secondary slot, mounting another fMRI instead of the one in place will not change those settings.</p>
+<p><em>Note: there are plans to add a additional volume for masking</em></p>
+<h2>Mount a volume once it's ready</h2>
+<p>Here is how to load a volume from a URL (that has to comply with CORS, i.e. be in the same server as Quickvoxel)</p>
+<pre class='hljs'><span class="hljs-comment">// ...</span>
+
+volumeCollection.addVolumeFromUrl( <span class="hljs-string">"./data/structural.nii.gz"</span> );
+
+<span class="hljs-comment">// mount the volume when it's ready!</span>
+volumeCollection.on(<span class="hljs-string">"volumeReady"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">volume</span>)</span>{
+  <span class="hljs-comment">// to mount the loaded volume on a specific engine slot.</span>
+  <span class="hljs-comment">// (if a volume is already on this slot, it's unmounted and replaced by the new one)</span>
+  renderEngine.mountVolumeN( <span class="hljs-number">0</span>, volume )
+
+  <span class="hljs-comment">// OR, you can just mount it on the first slot available</span>
+  <span class="hljs-keyword">let</span> couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+
+  <span class="hljs-keyword">if</span>( !couldMount ){
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"All volume slots are taken on the render engine, make some space before rendering this volume."</span>);
+  }
+})</pre>
+<p>Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the <a href="./examples/simpleFile.html">example here</a>. Then, the logic for mounting on a slot is the same.</p>
 
   
 </section>
@@ -3109,6 +3248,138 @@ Available are:</p>
       </div>
     </div>
   
+    <div class='border-bottom' id='renderenginesetposition'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>setPosition(position)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Update the position of the center of the _planeSystem in world coordinates.
+Not each position property have to be updated.</p>
+
+
+  <div class='pre p1 fill-light mt0'>setPosition(position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>position</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+            = <code>{x:undefined,y:undefined,z:undefined}</code>)</code>
+	    The new position
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='renderenginesettimeindexslotn'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>setTimeIndexSlotN(n, t)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Set the time index of the volume mounted on the Nth slot.
+If the time index is higher than the duration of the volume, it will loop with a modulo</p>
+
+
+  <div class='pre p1 fill-light mt0'>setTimeIndexSlotN(n: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>, t: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>n</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
+	    index of the volume slot
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>t</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
+	    the time index
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
     <div class='border-bottom' id='renderenginetranslatealongxdominant'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
@@ -3326,68 +3597,6 @@ texture attached to the volume on slot N will no longer be visible.</p>
 	    [
 description
 ]
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='renderengineupdateplanesystemposition'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>updatePlaneSystemPosition(position)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Update the position of the center of the _planeSystem in world coordinates.
-Not each position property have to be updated.</p>
-
-
-  <div class='pre p1 fill-light mt0'>updatePlaneSystemPosition(position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>position</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-            = <code>{x:undefined,y:undefined,z:undefined}</code>)</code>
-	    The new position
 
           </div>
           

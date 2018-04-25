@@ -185,6 +185,7 @@ class RenderEngine {
     xyPlane.rotation.x = Math.PI; // just so that the first normal goes to the positive direction
     xyPlane.parent = orthoPlaneSystem;
     xyPlane.material = this._shaderMaterial
+    xyPlane.computeWorldMatrix(true)
 
     let xzPlane = BABYLON.MeshBuilder.CreatePlane(
       "xz",
@@ -196,6 +197,7 @@ class RenderEngine {
     xzPlane.rotation.x = Math.PI/2;
     xzPlane.parent = orthoPlaneSystem;
     xzPlane.material = this._shaderMaterial;
+    xzPlane.computeWorldMatrix(true)
 
     let yzPlane = BABYLON.MeshBuilder.CreatePlane(
       "yz",
@@ -207,7 +209,9 @@ class RenderEngine {
     yzPlane.rotation.y = -Math.PI/2;
     yzPlane.parent = orthoPlaneSystem;
     yzPlane.material = this._shaderMaterial;
+    yzPlane.computeWorldMatrix(true)
 
+    console.log( "planes rotated" );
     return orthoPlaneSystem;
   }
 
@@ -231,7 +235,7 @@ class RenderEngine {
    * Not each position property have to be updated.
    * @param  {Object} [position={x:undefined, y:undefined, z:undefined}] - The new position
    */
-  updatePlaneSystemPosition (position={x:undefined, y:undefined, z:undefined}) {
+  setPosition (position={x:undefined, y:undefined, z:undefined}) {
     if (position.x !== undefined) {
       this._planeSystem.position.x = position.x;
     }
@@ -244,8 +248,6 @@ class RenderEngine {
       this._planeSystem.position.z = position.z;
     }
   }
-
-
 
 
   /**
@@ -419,7 +421,11 @@ class RenderEngine {
    * @param {Number} b - value of the brightness, neutral being 0
    */
   setBrightnessSlotN (n, b=0.) {
-    this._shaderMaterial.setFloat( "vol_" + n + "_brightness", b )
+    if( n>=0 && n < this._mountedVolumes.length ){
+      this._shaderMaterial.setFloat( "vol_" + n + "_brightness", b )
+    } else {
+      console.warn('the index of the slot is out of range.')
+    }
   }
 
 
@@ -429,7 +435,11 @@ class RenderEngine {
    * @param {Number} b - value of the cotrast, neutral being 1
    */
   setContrastSlotN (n, c=1.) {
-    this._shaderMaterial.setFloat( "vol_" + n + "_contrast", c )
+    if( n>=0 && n < this._mountedVolumes.length ){
+      this._shaderMaterial.setFloat( "vol_" + n + "_contrast", c )
+    } else {
+      console.warn('the index of the slot is out of range.')
+    }
   }
 
 
@@ -438,8 +448,29 @@ class RenderEngine {
    * @param  {Boolean} [d=true] - display is true, hide if false
    */
   displayVolumeSlotN (n, d=true) {
-    this._shaderMaterial.setInt( "vol_" + n + "_display", +d )
+    if( n>=0 && n < this._mountedVolumes.length ){
+      this._shaderMaterial.setInt( "vol_" + n + "_display", +d )
+    } else {
+      console.warn('the index of the slot is out of range.')
+    }
   }
+
+
+  /**
+   * Set the time index of the volume mounted on the Nth slot.
+   * If the time index is higher than the duration of the volume, it will loop with a modulo
+   * @param {Number} n - index of the volume slot
+   * @param {Number} t - the time index
+   */
+  setTimeIndexSlotN (n, t) {
+    if( n>=0 && n < this._mountedVolumes.length ){
+      let timeMax = this._mountedVolumes[n].getTimeLength()
+      this._shaderMaterial.setInt( "vol_" + n + "_timeVal", t%timeMax )
+    } else {
+      console.warn('the index of the slot is out of range.')
+    }
+  }
+
 
   /**
    * must be in [0, 1].

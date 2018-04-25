@@ -1,0 +1,91 @@
+<html>
+<head>
+  <title>Double Translate</title>
+
+  <style>
+  html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    color: white;
+  }
+
+  a {
+    text-decoration: none;
+    color: #FF91D7;
+  }
+
+  #renderCanvas {
+    width: 100%;
+    height: 100%;
+    /*touch-action: none;*/
+  }
+
+
+  </style>
+
+</head>
+<body>
+  <!-- importing the automatically build module -->
+  <script src="../dist/quickvoxelcore.es6.js"></script>
+
+  <canvas id="renderCanvas" touch-action="none"></canvas>
+
+  <script>
+    let canvas = document.getElementById("renderCanvas")
+
+    // the QuickvoxelCore instance is the entry point
+    let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+    // for future access to the volume collection
+    let volumeCollection = qvc.getVolumeCollection();
+    // for future access the render engine
+    let renderEngine = qvc.getRenderEngine();
+
+    // color and constrast settings
+    renderEngine.setColormapSlotN(1, 'jet')
+    renderEngine.setBlendMethod("multiply")
+    renderEngine.setBrightnessSlotN(1, 0.15)
+    renderEngine.setBrightnessSlotN(0, 0.25)
+    renderEngine.setContrastSlotN(0, 1.2)
+
+    let timeIndex = 0
+
+    // moving around
+    setInterval(function(){
+      let pos = Math.cos(timeIndex/100)*60
+      renderEngine.setPosition({
+        x: pos,
+        y: pos,
+        z: pos
+      })
+      timeIndex ++
+    }, 10)
+
+    let dataFolder = "../data/"
+    let structural = "structural.nii.gz"
+    let functional = "functional.nii.gz"
+    volumeCollection.addVolumeFromUrl( dataFolder + structural )
+    volumeCollection.addVolumeFromUrl( dataFolder + functional )
+
+    // here, we have 2 volumes to mount. We could use .mountVolumeOnFirstEmptySlot() but we want to
+    // control which volume is mounted on which slot of the rendering engine, so we do it manually:
+    // the structural MRI volume on the slot 0
+    // the functional MRI volume on the slot 1
+    // This way, we can decide on which to apply the colormap
+    volumeCollection.on("volumeReady", function(volume){
+
+      if( volume.getId() === structural ){
+        renderEngine.mountVolumeN( 0, volume )
+      }else{
+        renderEngine.mountVolumeN( 1, volume )
+      }
+    })
+
+
+  </script>
+
+</body>
+</html>
