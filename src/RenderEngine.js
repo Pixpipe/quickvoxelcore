@@ -355,7 +355,7 @@ class RenderEngine {
    */
   getSlotIndexFromVolumeId (id) {
     for(let i=0; i<this._mountedVolumes.length; i++){
-      if( this._mountedVolumes[i].getId() === id )
+      if( this._mountedVolumes[i] && this._mountedVolumes[i].getId() === id )
         return i
     }
 

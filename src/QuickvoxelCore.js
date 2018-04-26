@@ -42,7 +42,7 @@ class QuickvoxelCore {
 
     // A volume is removed from the collection --> make sure it no longer shows in the render engine
     this._volumeCollection.on('volumeRemoved', function( id ){
-      console.log(`Volume ${volume.getId()} removed from collection.`);
+      console.log(`Volume ${id} removed from collection.`);
       let mountedIndex = that.unmountVolumeWithId( id );
       if (mountedIndex >= 0)
         console.log("+ removed from the render engine.");
