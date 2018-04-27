@@ -251,6 +251,15 @@ class RenderEngine {
 
 
   /**
+   * Get the position of the center of the plane
+   * @return {BABYLON.Vector3} position
+   */
+  getPosition () {
+    return this._planeSystem.position.clone()
+  }
+
+
+  /**
    * Reset the rotation of the _planeSystem
    */
   resetPosition () {
