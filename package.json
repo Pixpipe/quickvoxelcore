@@ -1,6 +1,6 @@
 {
   "name": "quickvoxelcore",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "The core for QuickVoxel app",
   "repository": "jonathanlurie/quickvoxelcore",
   "moduleName": "quickvoxelcore",
