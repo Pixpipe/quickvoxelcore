@@ -119,6 +119,17 @@ let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
 let volumeCollection = qvc.getVolumeCollection()
 let renderEngine = qvc.getRenderEngine()
 ```
+
+Though, before launching your main app, if can be nice to check if QuickvoxelCore is running in a WebGL2 compatible environment. We have a function for that:
+```javascript
+// test compatibility with WebGL2
+if (!quickvoxelcore.webGL2()){
+  alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+} else {
+  // launch your app here
+}
+```
+
 ## Interlude: the VolumeCollection
 The `VolumeCollection` instance allows you to add new volume from file URL or from a file dialog. Once added, a volume file will automatically:
 - be given a unique ID within the collection
@@ -205,11 +216,13 @@ Here is a list of what you can do:
 
 # TODO
 In what is probably the order of future developments:
-- Check if WebGL2 is enabled
-- Add XYZ axis of a grid system to know where we are
-- Masking capabilities (as a 3rd slot that has special features)
-- Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)
-- Try to build 3D textures without having to perform a conversion from float32 to uint8
-- Add 3 cameras that are always facing each of the ortho planes
-- Gives the possibility to change the camera
-- Have a split view options with the 4 camera (3 orthos + 1 perspective)
+- [ ] Add method to automatically position the main (perspective) camera along the *dominant* X Y or Z
+- [ ] Add a method to force the main (perspective) camera to follow the center of the plane system
+- [ ] Add XYZ axis of a grid system to know where we are
+- [ ] Masking capabilities (as a 3rd slot that has special features)
+- [ ] Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)
+- [ ] Try to build 3D textures without having to perform a conversion from float32 to uint8
+- [ ] Add 3 cameras that are always facing each of the ortho planes
+- [ ] Gives the possibility to change the camera
+- [ ] Have a split view options with the 4 camera (3 orthos + 1 perspective)
+- [x] Check if WebGL2 is enabled

@@ -1,4 +1,5 @@
-import * as BABYLON from 'babylonjs/es6.js'
+//import * as BABYLON from 'babylonjs/es6.js'
+import { Effect as BJSEffect, Engine as BJSEngine, Scene as BJSScene, Color3 as BJSColor3, ArcRotateCamera as BJSArcRotateCamera, Vector3 as BJSVector3, RawTexture3D as BJSRawTexture3D, ShaderMaterial as BJSShaderMaterial, Matrix as BJSMatrix, Mesh as BJSMesh, Quaternion as BJSQuaternion, MeshBuilder as BJSMeshBuilder } from 'babylonjs/es6.js'
 import worldcoordtexture3dFrag from './shaders/worldcoordtexture3d.frag.glsl'
 import worldcoordtexture3dVert from './shaders/worldcoordtexture3d.vert.glsl'
 import { ColormapManager } from './ColormapManager.js'
@@ -17,13 +18,13 @@ class RenderEngine {
    */
   constructor ( canvasElem ) {
     let that = this
-    BABYLON.Effect.ShadersStore["worldCoordVolumeFragmentShader"] = worldcoordtexture3dFrag
-    BABYLON.Effect.ShadersStore["worldCoordVolumeVertexShader"] = worldcoordtexture3dVert
+    BJSEffect.ShadersStore["worldCoordVolumeFragmentShader"] = worldcoordtexture3dFrag
+    BJSEffect.ShadersStore["worldCoordVolumeVertexShader"] = worldcoordtexture3dVert
 
     this._canvas = canvasElem
-    this._engine = new BABYLON.Engine(this._canvas, true)
-    this._scene = new BABYLON.Scene(this._engine)
-    this._scene.clearColor = new BABYLON.Color3(0.92, 0.92, 0.92)
+    this._engine = new BJSEngine(this._canvas, true)
+    this._scene = new BJSScene(this._engine)
+    this._scene.clearColor = new BJSColor3(0.92, 0.92, 0.92)
 
     this._colormapManager = new ColormapManager( this._scene )
     this._cameras = {
@@ -53,9 +54,9 @@ class RenderEngine {
    * Initialize the default (main) camera. The main camera is a regular perspective cemera (aka. not ortho)
    */
   _initMainCamera () {
-    let mainCam = new BABYLON.ArcRotateCamera("main", Math.PI / 2, Math.PI / 2, 2, BABYLON.Vector3.Zero(), this._scene);
+    let mainCam = new BJSArcRotateCamera("main", Math.PI / 2, Math.PI / 2, 2, BJSVector3.Zero(), this._scene);
     mainCam.inertia = 0.7;
-    mainCam.setPosition( new BABYLON.Vector3(300, 0, 0) )
+    mainCam.setPosition( new BJSVector3(300, 0, 0) )
     mainCam.attachControl( this._canvas, true, true );
     mainCam.upperBetaLimit = null;
     mainCam.lowerBetaLimit = null;
@@ -76,7 +77,7 @@ class RenderEngine {
    * @return {[type]} [description]
    */
   _initEmpty3dTexture () {
-    return new BABYLON.RawTexture3D( new Uint8Array(1),1,1,1,BABYLON.Engine.TEXTUREFORMAT_LUMINANCE, this._scene);
+    return new BJSRawTexture3D( new Uint8Array(1),1,1,1, BJSEngine.TEXTUREFORMAT_LUMINANCE, this._scene);
   }
 
 
@@ -86,7 +87,7 @@ class RenderEngine {
    * @return {[type]} [description]
    */
   _initShaderMaterial () {
-    let shaderMaterial = new BABYLON.ShaderMaterial(
+    let shaderMaterial = new BJSShaderMaterial(
       'shad',
       this._scene,
       {
@@ -150,7 +151,7 @@ class RenderEngine {
    */
   _initDefaultTexture (n, shaderMaterial) {
     shaderMaterial.setTexture( "vol_" + n + "_texture3D", this._emptyTexture3D )
-    shaderMaterial.setMatrix( "vol_" + n + "_transfoMat", BABYLON.Matrix.Identity() )
+    shaderMaterial.setMatrix( "vol_" + n + "_transfoMat", BJSMatrix.Identity() )
     shaderMaterial.setInt( "vol_" + n + "_timeVal", 0 )
     shaderMaterial.setInt( "vol_" + n + "_timeSize", 0 )
     shaderMaterial.setInt( "vol_" + n + "_textureReady", 0 )
@@ -172,39 +173,39 @@ class RenderEngine {
    * @return {[type]} [description]
    */
   _initOrthoPlaneSystem () {
-    let orthoPlaneSystem = new BABYLON.Mesh( "orthoPlaneSystem", this._scene );
-    orthoPlaneSystem.rotationQuaternion = BABYLON.Quaternion.Identity()
+    let orthoPlaneSystem = new BJSMesh( "orthoPlaneSystem", this._scene );
+    orthoPlaneSystem.rotationQuaternion = BJSQuaternion.Identity()
 
-    let xyPlane = BABYLON.MeshBuilder.CreatePlane(
+    let xyPlane = BJSMeshBuilder.CreatePlane(
       "xy",
       {
         height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
-        sideOrientation: BABYLON.Mesh.DOUBLESIDE
+        sideOrientation: BJSMesh.DOUBLESIDE
       }, this._scene);
     xyPlane.rotation.x = Math.PI; // just so that the first normal goes to the positive direction
     xyPlane.parent = orthoPlaneSystem;
     xyPlane.material = this._shaderMaterial
     xyPlane.computeWorldMatrix(true)
 
-    let xzPlane = BABYLON.MeshBuilder.CreatePlane(
+    let xzPlane = BJSMeshBuilder.CreatePlane(
       "xz",
       {
         height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
-        sideOrientation: BABYLON.Mesh.DOUBLESIDE
+        sideOrientation: BJSMesh.DOUBLESIDE
       }, this._scene);
     xzPlane.rotation.x = Math.PI/2;
     xzPlane.parent = orthoPlaneSystem;
     xzPlane.material = this._shaderMaterial;
     xzPlane.computeWorldMatrix(true)
 
-    let yzPlane = BABYLON.MeshBuilder.CreatePlane(
+    let yzPlane = BJSMeshBuilder.CreatePlane(
       "yz",
       {
         height:CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
         width: CONSTANTS.GEOMETRY.DEFAULT_PLANE_SIZE,
-        sideOrientation: BABYLON.Mesh.DOUBLESIDE
+        sideOrientation: BJSMesh.DOUBLESIDE
       }, this._scene);
     yzPlane.rotation.y = -Math.PI/2;
     yzPlane.parent = orthoPlaneSystem;
@@ -223,7 +224,7 @@ class RenderEngine {
    */
   setCameraPosition ( cameraId, position={x:100, y:100, z:100}) {
     if( cameraId in this._cameras ){
-      this._cameras[ cameraId ].setPosition( new BABYLON.Vector3(position.x, position.y, position.z) );
+      this._cameras[ cameraId ].setPosition( new BJSVector3(position.x, position.y, position.z) );
     }else{
       console.warn(`Camera with the id ${cameraId} does not exist`);
     }
@@ -527,7 +528,7 @@ class RenderEngine {
 
     for (let i=0; i<planes.length; i++) {
       let n = planes[i].getFacetNormal(0)
-      let dot = BABYLON.Vector3.Dot(refVecNorm, n )
+      let dot = BJSVector3.Dot(refVecNorm, n )
       let absDot = Math.abs(dot)
 
       if (Math.abs(dot) > dotMax) {
@@ -546,7 +547,7 @@ class RenderEngine {
    * @return {BABYLON.Vector3} the normal vector (as a clone)
    */
   getXDominantPlaneNormal () {
-    return this._getDominantPlaneNormal( new BABYLON.Vector3(-1, 0, 0) )
+    return this._getDominantPlaneNormal( new BJSVector3(-1, 0, 0) )
   }
 
 
@@ -557,7 +558,7 @@ class RenderEngine {
    * @return {BABYLON.Vector3} the normal vector (as a clone)
    */
   getYDominantPlaneNormal () {
-    return this._getDominantPlaneNormal( new BABYLON.Vector3(0, 1, 0) )
+    return this._getDominantPlaneNormal( new BJSVector3(0, 1, 0) )
   }
 
 
@@ -568,7 +569,7 @@ class RenderEngine {
    * @return {BABYLON.Vector3} the normal vector (as a clone)
    */
   getZDominantPlaneNormal () {
-    return this._getDominantPlaneNormal( new BABYLON.Vector3(0, 0, 1) )
+    return this._getDominantPlaneNormal( new BJSVector3(0, 0, 1) )
   }
 
 
@@ -657,7 +658,7 @@ class RenderEngine {
    * @param {Number} z - Rotation on z
    */
   setPlaneSystemEulerAngle (x, y, z) {
-    let newQuat = BABYLON.Quaternion.RotationYawPitchRoll(y, x, z)
+    let newQuat = BJSQuaternion.RotationYawPitchRoll(y, x, z)
     this._planeSystem.rotationQuaternion = newQuat
   }
 

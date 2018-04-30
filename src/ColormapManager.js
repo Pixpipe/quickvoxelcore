@@ -1,5 +1,8 @@
-import pixpipe from 'pixpipe'
-import * as BABYLON from 'babylonjs/es6.js'
+//import pixpipe from 'pixpipe'
+import { Colormap } from 'pixpipe/dist/pixpipe.esmodule.js'
+//import * as BABYLON from 'babylonjs/es6.js'
+import { RawTexture as BJSRawTexture, Engine as BJSEngine, Texture as BJSTexture} from 'babylonjs/es6.js'
+
 
 /**
  * An instance of ColormapManager is used by RenderEngine so generate colormaps to apply on the volume.
@@ -31,8 +34,8 @@ class ColormapManager {
    * Generate BabylonJS textures correcponding to Pixpipe builtin colormaps
    */
   _createColormapTextures () {
-    var styles = pixpipe.Colormap.getAvailableStyles()
-    var cm = new pixpipe.Colormap()
+    var styles = Colormap.getAvailableStyles()
+    var cm = new Colormap()
 
     for (let i=0; i<styles.length; i++) {
       let name = styles[i]
@@ -42,17 +45,17 @@ class ColormapManager {
       cmImg.setMetadata("name", name)
 
 
-      let cmTexture = new BABYLON.RawTexture(
+      let cmTexture = new BJSRawTexture(
         // not using getDataAsUInt8Array() here because we dont want to scale on min-max
         new Uint8Array( cmImg.getData() ), // data
         this._nbSamples, // width
         1, // height
-        BABYLON.Engine.TEXTUREFORMAT_RGBA, // format
+        BJSEngine.TEXTUREFORMAT_RGBA, // format
         this._scene, // scene
         false, // gen mipmaps
         false, // invertY
-        BABYLON.Texture.TRILINEAR_SAMPLINGMODE,
-        BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT
+        BJSTexture.TRILINEAR_SAMPLINGMODE,
+        BJSEngine.TEXTURETYPE_UNSIGNED_INT
       )
 
       this._colormapTextures[ name ] = cmTexture

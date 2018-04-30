@@ -1,4 +1,4 @@
-import pixpipe from 'pixpipe'
+import { UrlToArrayBufferReader, FileToArrayBufferReader, Image3DGenericDecoderAlt } from 'pixpipe/dist/pixpipe.esmodule.js'
 //import * as BABYLON from 'babylonjs/es6.js'
 
 import { Volume } from './Volume.js'
@@ -6,7 +6,7 @@ import { Volume } from './Volume.js'
 /**
  * The VolumeCollection is automatically initialized by the constructor of QuickVoxelCore.
  * When the QuickVoxelCore object is created, the VolumeCollection can be fetched to perform actions directly on it.
- * 
+ *
  * A instance of VolumeCollection manages and identifies Volume instances.
  * A `Volume` can be added to the collection using `.addVolumeFromUrl()` and `.addVolumeFromFile()`.
  * Once one of these two method is called, a `Volume` instance is created (itself generating a 3D texture)
@@ -127,13 +127,13 @@ class VolumeCollection {
    */
   addVolumeFromUrl (url) {
     let that = this;
-    let urlArrBuff =  new pixpipe.UrlToArrayBufferReader();
+    let urlArrBuff =  new UrlToArrayBufferReader();
 
     urlArrBuff.addInput( url, 0 );
 
     urlArrBuff.on("ready", function(){
       let arrBuff = this.getOutput();
-      let generic3DDecoder = new pixpipe.Image3DGenericDecoderAlt();
+      let generic3DDecoder = new Image3DGenericDecoderAlt();
       generic3DDecoder.addInput( arrBuff )
       generic3DDecoder.update()
       let img3D = generic3DDecoder.getOutput()
@@ -158,12 +158,12 @@ class VolumeCollection {
    */
   addVolumeFromFile (file) {
     let that = this
-    let file2Buff = new pixpipe.FileToArrayBufferReader()
+    let file2Buff = new FileToArrayBufferReader()
     let filename = file.name
 
     file2Buff.on("ready", function(){
       let arrBuff = this.getOutput();
-      let generic3DDecoder = new pixpipe.Image3DGenericDecoderAlt()
+      let generic3DDecoder = new Image3DGenericDecoderAlt()
       generic3DDecoder.addInput( arrBuff )
       generic3DDecoder.update()
       let img3D = generic3DDecoder.getOutput()

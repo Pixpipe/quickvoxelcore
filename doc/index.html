@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset='utf-8' />
-  <title>Quickvoxel Core 0.1.2 | Documentation</title>
+  <title>Quickvoxel Core 0.1.3 | Documentation</title>
   <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link href='assets/bass.css' type='text/css' rel='stylesheet' />
@@ -16,7 +16,7 @@
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'><img class="width100pc" src="assets/name_1000.png" alt="Quickvoxel Core"></h3>
-          <div class='mb1'><code>v0.1.2</code></div>
+          <div class='mb1'><code>v0.1.3</code></div>
           <input
             placeholder='What are you looking for?'
             id='filter-input'
@@ -475,6 +475,16 @@
                 
                 </li>
               
+                
+                <li><a
+                  href='#webgl2'
+                  class="">
+                  webGL2
+                  
+                </a>
+                
+                </li>
+              
             </ul>
           </div>
           <div class='mt1 h6 quiet'>
@@ -592,6 +602,13 @@ A lot of additional methods to do more interesting things with <em>Quickvoxel</e
 
 <span class="hljs-keyword">let</span> volumeCollection = qvc.getVolumeCollection()
 <span class="hljs-keyword">let</span> renderEngine = qvc.getRenderEngine()</pre>
+<p>Though, before launching your main app, if can be nice to check if QuickvoxelCore is running in a WebGL2 compatible environment. We have a function for that:</p>
+<pre class='hljs'><span class="hljs-comment">// test compatibility with WebGL2</span>
+<span class="hljs-keyword">if</span> (!quickvoxelcore.webGL2()){
+  alert( <span class="hljs-string">'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.'</span> )
+} <span class="hljs-keyword">else</span> {
+  <span class="hljs-comment">// launch your app here</span>
+}</pre>
 <h2>Interlude: the VolumeCollection</h2>
 <p>The <code>VolumeCollection</code> instance allows you to add new volume from file URL or from a file dialog. Once added, a volume file will automatically:</p>
 <ul>
@@ -667,14 +684,16 @@ volumeCollection.on(<span class="hljs-string">"volumeReady"</span>, <span class=
 <h1>TODO</h1>
 <p>In what is probably the order of future developments:</p>
 <ul>
-<li>Check if WebGL2 is enabled</li>
-<li>Add XYZ axis of a grid system to know where we are</li>
-<li>Masking capabilities (as a 3rd slot that has special features)</li>
-<li>Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)</li>
-<li>Try to build 3D textures without having to perform a conversion from float32 to uint8</li>
-<li>Add 3 cameras that are always facing each of the ortho planes</li>
-<li>Gives the possibility to change the camera</li>
-<li>Have a split view options with the 4 camera (3 orthos + 1 perspective)</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add method to automatically position the main (perspective) camera along the <em>dominant</em> X Y or Z</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add a method to force the main (perspective) camera to follow the center of the plane system</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add XYZ axis of a grid system to know where we are</li>
+<li class="task-list-item"><input type="checkbox" disabled> Masking capabilities (as a 3rd slot that has special features)</li>
+<li class="task-list-item"><input type="checkbox" disabled> Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)</li>
+<li class="task-list-item"><input type="checkbox" disabled> Try to build 3D textures without having to perform a conversion from float32 to uint8</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add 3 cameras that are always facing each of the ortho planes</li>
+<li class="task-list-item"><input type="checkbox" disabled> Gives the possibility to change the camera</li>
+<li class="task-list-item"><input type="checkbox" disabled> Have a split view options with the 4 camera (3 orthos + 1 perspective)</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Check if WebGL2 is enabled</li>
 </ul>
 
   
@@ -4509,6 +4528,67 @@ This canvas elem can directly be <code>append</code> to some div.</p>
     </div>
   
 </div>
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='webgl2'>
+      webGL2
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>Know if the current environment is webGL2 compatible.
+Usage:</p>
+<pre class='hljs'><span class="hljs-keyword">if</span> (!quickvoxelcore.webGL2()){
+  alert( <span class="hljs-string">'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.'</span> )
+} <span class="hljs-keyword">else</span> {
+  <span class="hljs-comment">// call the main app</span>
+}</pre>
+
+
+  <div class='pre p1 fill-light mt0'>webGL2(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a></code>:
+        true if compatible with WebGL2, false if not
+
+      
+    
+  
+
+  
+
+  
+
+  
 
   
 

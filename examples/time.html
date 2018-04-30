@@ -35,52 +35,61 @@
   <canvas id="renderCanvas" touch-action="none"></canvas>
 
   <script>
-    let canvas = document.getElementById("renderCanvas")
 
-    // the QuickvoxelCore instance is the entry point
-    let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
-    // for future access to the volume collection
-    let volumeCollection = qvc.getVolumeCollection();
-    // for future access the render engine
-    let renderEngine = qvc.getRenderEngine();
+    // test compatibility with WebGL2
+    if (!quickvoxelcore.webGL2()){
+      alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+    } else {
+      main()
+    }
 
-    // color and constrast settings
-    renderEngine.setColormapSlotN(1, 'jet')
-    renderEngine.setBlendMethod("multiply")
-    renderEngine.setBrightnessSlotN(1, 0.35)
-    renderEngine.setBrightnessSlotN(0, 0.25)
-    renderEngine.setContrastSlotN(0, 1.2)
-    renderEngine.setContrastSlotN(1, 2)
+    function main () {
+      let canvas = document.getElementById("renderCanvas")
 
-    let timeIndex = 0
-    let dataFolder = "../data/"
-    let structural = "structural.nii.gz"
-    let functional = "functional.nii.gz"
-    volumeCollection.addVolumeFromUrl( dataFolder + structural )
-    volumeCollection.addVolumeFromUrl( dataFolder + functional )
+      // the QuickvoxelCore instance is the entry point
+      let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+      // for future access to the volume collection
+      let volumeCollection = qvc.getVolumeCollection();
+      // for future access the render engine
+      let renderEngine = qvc.getRenderEngine();
 
-    // here, we have 2 volumes to mount. We could use .mountVolumeOnFirstEmptySlot() but we want to
-    // control which volume is mounted on which slot of the rendering engine, so we do it manually:
-    // the structural MRI volume on the slot 0
-    // the functional MRI volume on the slot 1
-    // This way, we can decide on which to apply the colormap
-    volumeCollection.on("volumeReady", function(volume){
+      // color and constrast settings
+      renderEngine.setColormapSlotN(1, 'jet')
+      renderEngine.setBlendMethod("multiply")
+      renderEngine.setBrightnessSlotN(1, 0.35)
+      renderEngine.setBrightnessSlotN(0, 0.25)
+      renderEngine.setContrastSlotN(0, 1.2)
+      renderEngine.setContrastSlotN(1, 2)
 
-      if( volume.getId() === structural ){
-        renderEngine.mountVolumeN( 0, volume )
-      }else{
-        renderEngine.mountVolumeN( 1, volume )
+      let timeIndex = 0
+      let dataFolder = "../data/"
+      let structural = "structural.nii.gz"
+      let functional = "functional.nii.gz"
+      volumeCollection.addVolumeFromUrl( dataFolder + structural )
+      volumeCollection.addVolumeFromUrl( dataFolder + functional )
 
-        // incrementing the time index
-        setInterval(function(){
-          renderEngine.setTimeIndexSlotN(1, timeIndex)
-          timeIndex ++
-        }, 50)
+      // here, we have 2 volumes to mount. We could use .mountVolumeOnFirstEmptySlot() but we want to
+      // control which volume is mounted on which slot of the rendering engine, so we do it manually:
+      // the structural MRI volume on the slot 0
+      // the functional MRI volume on the slot 1
+      // This way, we can decide on which to apply the colormap
+      volumeCollection.on("volumeReady", function(volume){
 
-      }
-    })
+        if( volume.getId() === structural ){
+          renderEngine.mountVolumeN( 0, volume )
+        }else{
+          renderEngine.mountVolumeN( 1, volume )
 
+          // incrementing the time index
+          setInterval(function(){
+            renderEngine.setTimeIndexSlotN(1, timeIndex)
+            timeIndex ++
+          }, 50)
 
+        }
+      })
+
+    }
   </script>
 
 </body>

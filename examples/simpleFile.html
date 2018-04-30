@@ -24,6 +24,11 @@
     /*touch-action: none;*/
   }
 
+  #fileInput {
+    position: absolute;
+    margin: 10px;
+  }
+
 
   </style>
 
@@ -35,39 +40,46 @@
   <canvas id="renderCanvas" touch-action="none"></canvas>
 
   <script>
+    // test compatibility with WebGL2
+    if (!quickvoxelcore.webGL2()){
+      alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+    } else {
+      main()
+    }
+
+    function main () {
+
+      let canvas = document.getElementById("renderCanvas")
+
+      // the QuickvoxelCore instance is the entry point
+      let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+      // for future access to the volume collection
+      let volumeCollection = qvc.getVolumeCollection();
+      // for future access the render engine
+      let renderEngine = qvc.getRenderEngine();
+
+      // mount the volume when it's ready!
+      volumeCollection.on("volumeReady", function(volume){
+        let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+        if( !couldMount ){
+          console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+        }
+      })
 
 
+      // the minimum necesary to add open a file
+      var fileInput = document.getElementById('fileInput');
+      fileInput.addEventListener('change', function(e) {
+        console.log( e );
+        var file = e.target.files.length ? e.target.files[0] : null
+        if (file) {
+          volumeCollection.addVolumeFromFile( file )
+        } else {
+          alert('Did you really select a file?')
+        }
+      });
 
-    let canvas = document.getElementById("renderCanvas")
-
-    // the QuickvoxelCore instance is the entry point
-    let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
-    // for future access to the volume collection
-    let volumeCollection = qvc.getVolumeCollection();
-    // for future access the render engine
-    let renderEngine = qvc.getRenderEngine();
-
-    // mount the volume when it's ready!
-    volumeCollection.on("volumeReady", function(volume){
-      let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
-      if( !couldMount ){
-        console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
-      }
-    })
-
-
-    // the minimum necesary to add open a file
-    var fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', function(e) {
-      console.log( e );
-      var file = e.target.files.length ? e.target.files[0] : null
-      if (file) {
-        volumeCollection.addVolumeFromFile( file )
-      } else {
-        alert('Did you really select a file?')
-      }
-    });
-
+    }
   </script>
 
 </body>

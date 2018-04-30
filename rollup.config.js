@@ -67,7 +67,7 @@ export default [
     output: {
       file: pkg.min,
       name: pkg.name,
-      sourcemap: true,
+      sourcemap: false,
       format: 'umd'
     },
 

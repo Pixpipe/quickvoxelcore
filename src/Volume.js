@@ -1,4 +1,4 @@
-import * as BABYLON from 'babylonjs/es6.js'
+import { Matrix as BJSMatrix, RawTexture3D as BJSRawTexture3D, Engine as BJSEngine, Texture as BJSTexture } from 'babylonjs/es6.js'
 
 /**
  * A Volume instance is a volumetric representation of some data that can be queried, displayed and identified.
@@ -35,18 +35,18 @@ class Volume {
 
     let pixpipe_w2vSwappedMatrix = img3D.getW2VMatrixSwapped()
 
-    let w2v = BABYLON.Matrix.FromArray( pixpipe_w2vSwappedMatrix ).transpose()
+    let w2v = BJSMatrix.FromArray( pixpipe_w2vSwappedMatrix ).transpose()
 
     // flipping the x axis is necessary because conventions are different between
     // WebGL and Pixpipe
-    let flipX = new BABYLON.Matrix.FromValues(
+    let flipX = new BJSMatrix.FromValues(
       -1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1
     )
 
-    let scalingMat = new BABYLON.Matrix.FromValues(
+    let scalingMat = new BJSMatrix.FromValues(
       1/img3D.getDimensionSize("x"), 0,  0,  0,
       0,  1/img3D.getDimensionSize("y"), 0,  0,
       0,  0,  1/img3D.getDimensionSize("z"), 0,
@@ -55,7 +55,7 @@ class Volume {
 
     // the texture must be addressed as [k, j, i], which is the opposite of how
     // Pixpipe does, so we just reverse the dimensionality in the transform
-    let reverseDimensionality = new BABYLON.Matrix.FromValues(
+    let reverseDimensionality = new BJSMatrix.FromValues(
       0, 0, 1, 0,
       0, 1, 0, 0,
       1, 0, 0, 0,
@@ -101,17 +101,17 @@ class Volume {
     let dimI = this._image3D.getDimensionSize("i");
     let dimT = this._image3D.getTimeLength();
 
-    this._texture3D = new BABYLON.RawTexture3D(
+    this._texture3D = new BJSRawTexture3D(
       this._image3D.getDataUint8(),
       dimK ,
       dimJ ,
       dimI * dimT,
-      BABYLON.Engine.TEXTUREFORMAT_LUMINANCE,
+      BJSEngine.TEXTUREFORMAT_LUMINANCE,
       bjsScene,
       false, // generate mipmaps
       false, // invertY
-      //BABYLON.Texture.NEAREST_SAMPLINGMODE
-      BABYLON.Texture.TRILINEAR_SAMPLINGMODE
+      //BJSTexture.NEAREST_SAMPLINGMODE
+      BJSTexture.TRILINEAR_SAMPLINGMODE
     )
   }
 

@@ -31,6 +31,16 @@
   <canvas id="renderCanvas"></canvas>
 
   <script>
+
+    // test compatibility with WebGL2
+    if (!quickvoxelcore.webGL2()){
+      alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+    } else {
+      main()
+    }
+
+
+  function main () {
     let canvas = document.getElementById("renderCanvas")
 
     // the QuickvoxelCore instance is the entry point
@@ -49,7 +59,7 @@
         console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
       }
     })
-
+  }
 
   </script>
 

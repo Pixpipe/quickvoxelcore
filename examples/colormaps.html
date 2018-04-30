@@ -51,42 +51,50 @@
   <div id="colormapDiv"></div>
 
   <script>
-    let canvas = document.getElementById("renderCanvas")
-    let colormapDiv = document.getElementById("colormapDiv")
+    // test compatibility with WebGL2
+    if (!quickvoxelcore.webGL2()){
+      alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+    } else {
+      main()
+    }
 
-    // the QuickvoxelCore instance is the entry point
-    let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
-    // for future access to the volume collection
-    let volumeCollection = qvc.getVolumeCollection()
-    // for future access the render engine
-    let renderEngine = qvc.getRenderEngine()
+    function main () {
+      let canvas = document.getElementById("renderCanvas")
+      let colormapDiv = document.getElementById("colormapDiv")
 
-    // adjusting contrast and brightness for better rendering with colormap
-    renderEngine.setContrastSlotN(0, 1.5)
-    renderEngine.setBrightnessSlotN(0, 0.3)
+      // the QuickvoxelCore instance is the entry point
+      let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
+      // for future access to the volume collection
+      let volumeCollection = qvc.getVolumeCollection()
+      // for future access the render engine
+      let renderEngine = qvc.getRenderEngine()
 
-
-    // display colormaps to allow selection
-    let allColormaps = renderEngine.getListOfColormaps()
-    allColormaps.forEach(function(cmName){
-      let cmCanvas = renderEngine.getColormapsCanvas(cmName)
-      colormapDiv.appendChild( cmCanvas )
-      cmCanvas.addEventListener("mouseover",function(e){
-        renderEngine.setColormapSlotN(0, cmName)
-      });
-    })
+      // adjusting contrast and brightness for better rendering with colormap
+      renderEngine.setContrastSlotN(0, 1.5)
+      renderEngine.setBrightnessSlotN(0, 0.3)
 
 
-    volumeCollection.addVolumeFromUrl( "../data/structural.nii.gz" )
+      // display colormaps to allow selection
+      let allColormaps = renderEngine.getListOfColormaps()
+      allColormaps.forEach(function(cmName){
+        let cmCanvas = renderEngine.getColormapsCanvas(cmName)
+        colormapDiv.appendChild( cmCanvas )
+        cmCanvas.addEventListener("mouseover",function(e){
+          renderEngine.setColormapSlotN(0, cmName)
+        });
+      })
 
-    // mount the volume when it's ready!
-    volumeCollection.on("volumeReady", function(volume){
-      let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
-      if( !couldMount ){
-        console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
-      }
-    })
 
+      volumeCollection.addVolumeFromUrl( "../data/structural.nii.gz" )
+
+      // mount the volume when it's ready!
+      volumeCollection.on("volumeReady", function(volume){
+        let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+        if( !couldMount ){
+          console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+        }
+      })
+    }
 
 
   </script>
