@@ -1,5 +1,6 @@
 import { RenderEngine } from './RenderEngine.js'
 import { VolumeCollection } from './VolumeCollection.js'
+import { CameraCrew } from './CameraCrew.js'
 
 /**
  * Build an instance of QuickvoxelCore to initialize Quickvoxel Core.
@@ -13,8 +14,9 @@ class QuickvoxelCore {
    * Takes a canvas element (DOM object) as argument to render the volumes.
    */
   constructor ( canvasElem ) {
-    this._renderEngine = new RenderEngine( canvasElem );
-    this._volumeCollection = new VolumeCollection;
+    this._renderEngine = new RenderEngine( canvasElem )
+    this._cameraCrew = new CameraCrew( this._renderEngine, canvasElem )
+    this._volumeCollection = new VolumeCollection()
 
     this._initEvents();
   }
@@ -66,6 +68,15 @@ class QuickvoxelCore {
    */
   getRenderEngine () {
     return this._renderEngine;
+  }
+
+
+  /**
+   * Get the CameraCrew instance in order to perform some camera manipulations
+   * @return {CameraCrew}
+   */
+  getCameraCrew () {
+    return this._cameraCrew
   }
 
 

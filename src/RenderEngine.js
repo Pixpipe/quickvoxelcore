@@ -1,5 +1,19 @@
 //import * as BABYLON from 'babylonjs/es6.js'
-import { Effect as BJSEffect, Engine as BJSEngine, Scene as BJSScene, Color3 as BJSColor3, ArcRotateCamera as BJSArcRotateCamera, Vector3 as BJSVector3, RawTexture3D as BJSRawTexture3D, ShaderMaterial as BJSShaderMaterial, Matrix as BJSMatrix, Mesh as BJSMesh, Quaternion as BJSQuaternion, MeshBuilder as BJSMeshBuilder } from 'babylonjs/es6.js'
+import {
+  Effect as BJSEffect,
+  Engine as BJSEngine,
+  Scene as BJSScene,
+  Color3 as BJSColor3,
+  ArcRotateCamera as BJSArcRotateCamera,
+  Vector3 as BJSVector3,
+  RawTexture3D as BJSRawTexture3D,
+  ShaderMaterial as BJSShaderMaterial,
+  Matrix as BJSMatrix,
+  Mesh as BJSMesh,
+  Quaternion as BJSQuaternion,
+  MeshBuilder as BJSMeshBuilder
+} from 'babylonjs/es6.js'
+
 import worldcoordtexture3dFrag from './shaders/worldcoordtexture3d.frag.glsl'
 import worldcoordtexture3dVert from './shaders/worldcoordtexture3d.vert.glsl'
 import { ColormapManager } from './ColormapManager.js'
@@ -27,12 +41,16 @@ class RenderEngine {
     this._scene.clearColor = new BJSColor3(0.92, 0.92, 0.92)
 
     this._colormapManager = new ColormapManager( this._scene )
-    this._cameras = {
-      main: this._initMainCamera(),
-    }
+
     this._emptyTexture3D = this._initEmpty3dTexture()
     this._shaderMaterial = this._initShaderMaterial()
     this._planeSystem = this._initOrthoPlaneSystem()
+
+    this._events = {
+      rotate: [],
+      translate: [],
+    }
+
 
     this._mountedVolumes = [
       null, // primary volume
@@ -46,6 +64,36 @@ class RenderEngine {
     window.addEventListener("resize", function () {
       that._engine.resize();
     });
+  }
+
+
+  /**
+   * Define the callback attached to an event
+   * @param  {String} eventName - the name of the event, must exist in this._events (with the value null)
+   * @param  {Function} callback - the function associated to this event
+   */
+  on (eventName, callback) {
+    if( (typeof callback === "function") && (eventName in this._events) ){
+      this._events[ eventName ].push( callback )
+    }
+  }
+
+
+  /**
+   * @private
+   * Call an event by invoking its name and providing some arguments.
+   * This methods should be used internally rather than using wild calls.
+   * @param  {String} eventName - the name of the event, must exist in this._events (with the value null)
+   * @param  {Array} args - array of arguments, to be spread when callback is called
+   */
+  _callEvent (eventName, args=[]) {
+    // the event must exist and be non null
+    if( (eventName in this._events) && (this._events[eventName].length>0) ){
+      let events = this._events[ eventName ]
+      for (let i=0; i<events.length; i++) {
+        events[i](...args)
+      }
+    }
   }
 
 
@@ -212,7 +260,6 @@ class RenderEngine {
     yzPlane.material = this._shaderMaterial;
     yzPlane.computeWorldMatrix(true)
 
-    console.log( "planes rotated" );
     return orthoPlaneSystem;
   }
 
@@ -222,6 +269,7 @@ class RenderEngine {
    * @param {String} cameraId - the id of the camera
    * @param {Object} position={x:100, y:100, z:100} - position of the camera
    */
+  /*
   setCameraPosition ( cameraId, position={x:100, y:100, z:100}) {
     if( cameraId in this._cameras ){
       this._cameras[ cameraId ].setPosition( new BJSVector3(position.x, position.y, position.z) );
@@ -229,7 +277,7 @@ class RenderEngine {
       console.warn(`Camera with the id ${cameraId} does not exist`);
     }
   }
-
+  */
 
   /**
    * Update the position of the center of the _planeSystem in world coordinates.
@@ -582,6 +630,7 @@ class RenderEngine {
     let axis = this.getXDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
   }
 
 
@@ -594,6 +643,7 @@ class RenderEngine {
     let axis = this.getYDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
   }
 
 
@@ -606,6 +656,7 @@ class RenderEngine {
     let axis = this.getZDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
   }
 
 
@@ -660,6 +711,7 @@ class RenderEngine {
   setPlaneSystemEulerAngle (x, y, z) {
     let newQuat = BJSQuaternion.RotationYawPitchRoll(y, x, z)
     this._planeSystem.rotationQuaternion = newQuat
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
   }
 
 
