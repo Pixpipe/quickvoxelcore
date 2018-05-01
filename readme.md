@@ -31,6 +31,7 @@ A lot of additional methods to do more interesting things with *Quickvoxel* are 
 - [+ animated translation](http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html)
 - [+ animated oblique](http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html)
 
+In addition [QuickGui](http://me.jonathanlurie.fr/quickgui/public/) ([source](https://github.com/jonathanlurie/quickgui)) is a more advanced project, developed for the ***#BrainHack2018*** in Montreal. It uses some features of Quickvoxel Core with a simple and accessible UI.
 
 # API documentation
 [HERE](http://www.pixpipe.io/quickvoxelcore/doc/)
