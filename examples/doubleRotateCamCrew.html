@@ -47,6 +47,8 @@
     // To modufy camera settings
     let camcrew = qvc.getCameraCrew()
 
+    let dominantRotationAxis = 'x'
+
     // color and constrast settings
     renderEngine.setColormapSlotN(1, 'jet')
     renderEngine.setBlendMethod("multiply")
@@ -56,7 +58,10 @@
 
     // moving around
     setInterval(function(){
-      renderEngine.rotateAroundXDominant(0.01)
+      if (dominantRotationAxis === '')
+        return
+      //renderEngine.rotateAroundXDominant(0.01)
+      renderEngine['rotateAround' + dominantRotationAxis.toUpperCase() + 'Dominant'](0.01)
     }, 10)
 
     let dataFolder = "../data/"

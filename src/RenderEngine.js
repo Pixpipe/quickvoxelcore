@@ -630,7 +630,7 @@ class RenderEngine {
     let axis = this.getXDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, 'x'])
   }
 
 
@@ -643,7 +643,7 @@ class RenderEngine {
     let axis = this.getYDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, 'y'])
   }
 
 
@@ -656,7 +656,7 @@ class RenderEngine {
     let axis = this.getZDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, 'z'])
   }
 
 
@@ -711,7 +711,7 @@ class RenderEngine {
   setPlaneSystemEulerAngle (x, y, z) {
     let newQuat = BJSQuaternion.RotationYawPitchRoll(y, x, z)
     this._planeSystem.rotationQuaternion = newQuat
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion])
+    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, null]) // here, 'dominantAxis' is null because it can be arbitrary
   }
 
 
