@@ -18,6 +18,7 @@ import worldcoordtexture3dFrag from './shaders/worldcoordtexture3d.frag.glsl'
 import worldcoordtexture3dVert from './shaders/worldcoordtexture3d.vert.glsl'
 import { ColormapManager } from './ColormapManager.js'
 import { CONSTANTS } from './constants.js'
+import { EventManager } from './EventManager.js'
 
 /**
  * The RenderEngine is automatically initialized by the constructor of QuickVoxelCore.
@@ -25,12 +26,13 @@ import { CONSTANTS } from './constants.js'
  * sending data to shaders, and updating them. Once the QuickVoxelCore object is created,
  * the RenderEngine can be fetched to call methods from it directly.
  */
-class RenderEngine {
+class RenderEngine extends EventManager {
   /**
    * constructor
    * @param {DomElement} canvasElem - a DOM object of a canvas
    */
   constructor ( canvasElem ) {
+    super()
     let that = this
     BJSEffect.ShadersStore["worldCoordVolumeFragmentShader"] = worldcoordtexture3dFrag
     BJSEffect.ShadersStore["worldCoordVolumeVertexShader"] = worldcoordtexture3dVert
@@ -64,36 +66,6 @@ class RenderEngine {
     window.addEventListener("resize", function () {
       that._engine.resize();
     });
-  }
-
-
-  /**
-   * Define the callback attached to an event
-   * @param  {String} eventName - the name of the event, must exist in this._events (with the value null)
-   * @param  {Function} callback - the function associated to this event
-   */
-  on (eventName, callback) {
-    if( (typeof callback === "function") && (eventName in this._events) ){
-      this._events[ eventName ].push( callback )
-    }
-  }
-
-
-  /**
-   * @private
-   * Call an event by invoking its name and providing some arguments.
-   * This methods should be used internally rather than using wild calls.
-   * @param  {String} eventName - the name of the event, must exist in this._events (with the value null)
-   * @param  {Array} args - array of arguments, to be spread when callback is called
-   */
-  _callEvent (eventName, args=[]) {
-    // the event must exist and be non null
-    if( (eventName in this._events) && (this._events[eventName].length>0) ){
-      let events = this._events[ eventName ]
-      for (let i=0; i<events.length; i++) {
-        events[i](...args)
-      }
-    }
   }
 
 
@@ -630,7 +602,7 @@ class RenderEngine {
     let axis = this.getXDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, 'x'])
+    this.emit('rotate', [this._planeSystem.rotationQuaternion, axis, angle])
   }
 
 
@@ -643,7 +615,7 @@ class RenderEngine {
     let axis = this.getYDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, 'y'])
+    this.emit('rotate', [this._planeSystem.rotationQuaternion, axis, angle])
   }
 
 
@@ -656,7 +628,7 @@ class RenderEngine {
     let axis = this.getZDominantPlaneNormal()
     let center = this._planeSystem.position
     this._planeSystem.rotateAround( center, axis, angle )
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, 'z'])
+    this.emit('rotate', [this._planeSystem.rotationQuaternion, axis, angle])
   }
 
 
@@ -711,7 +683,7 @@ class RenderEngine {
   setPlaneSystemEulerAngle (x, y, z) {
     let newQuat = BJSQuaternion.RotationYawPitchRoll(y, x, z)
     this._planeSystem.rotationQuaternion = newQuat
-    this._callEvent('rotate', [this._planeSystem.rotationQuaternion, null]) // here, 'dominantAxis' is null because it can be arbitrary
+    this.emit('rotate', [this._planeSystem.rotationQuaternion, null, null]) // here, 'dominantAxis' is null because it can be arbitrary
   }
 
 

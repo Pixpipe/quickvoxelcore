@@ -2,6 +2,7 @@ import { UrlToArrayBufferReader, FileToArrayBufferReader, Image3DGenericDecoderA
 //import * as BABYLON from 'babylonjs/es6.js'
 
 import { Volume } from './Volume.js'
+import { EventManager } from './EventManager.js'
 
 /**
  * The VolumeCollection is automatically initialized by the constructor of QuickVoxelCore.
@@ -26,11 +27,12 @@ import { Volume } from './Volume.js'
  * ```
  *
  */
-class VolumeCollection {
+class VolumeCollection extends EventManager {
   /**
    * The constuctor for the VolumeCollection
    */
   constructor () {
+    super()
     this._volume = {}
 
     this._events = {
@@ -39,36 +41,6 @@ class VolumeCollection {
       volumeRemoved: [], // called when a volume is removed from the collection
       errorAddingVolume: [], // called when a volume could not be added to the collection
     };
-  }
-
-
-  /**
-   * Define the callback attached to an event
-   * @param  {String} eventName - the name of the event, must exist in this._events (with the value null)
-   * @param  {Function} callback - the function associated to this event
-   */
-  on (eventName, callback) {
-    if( (typeof callback === "function") && (eventName in this._events) ){
-      this._events[ eventName ].push( callback )
-    }
-  }
-
-
-  /**
-   * @private
-   * Call an event by invoking its name and providing some arguments.
-   * This methods should be used internally rather than using wild calls.
-   * @param  {String} eventName - the name of the event, must exist in this._events (with the value null)
-   * @param  {Array} args - array of arguments, to be spread when callback is called
-   */
-  _callEvent (eventName, args=[]) {
-    // the event must exist and be non null
-    if( (eventName in this._events) && (this._events[eventName].length>0) ){
-      let events = this._events[ eventName ]
-      for (let i=0; i<events.length; i++) {
-        events[i](...args)
-      }
-    }
   }
 
 
@@ -95,8 +67,8 @@ class VolumeCollection {
   _addToCollection (volume) {
     let id = volume.getId()
     this._volume[ id ] = volume;
-    this._callEvent( 'volumeAdded', [volume] );
-    this._callEvent( 'volumeReady', [volume] );
+    this.emit( 'volumeAdded', [volume] );
+    this.emit( 'volumeReady', [volume] );
   }
 
 
@@ -144,7 +116,7 @@ class VolumeCollection {
         let volume = new Volume( id, img3D );
         that._addToCollection( volume )
       }else{
-        that._callEvent( 'errorAddingVolume', [url] );
+        that.emit( 'errorAddingVolume', [url] );
       }
     });
 
@@ -174,7 +146,7 @@ class VolumeCollection {
         let volume = new Volume( id, img3D )
         that._addToCollection( volume )
       }else{
-        that._callEvent( 'errorAddingVolume', file)
+        that.emit( 'errorAddingVolume', file)
       }
     });
 
@@ -214,7 +186,7 @@ class VolumeCollection {
   removeVolume (id) {
     if( id in this._volume ){
       delete this._volume[ id ]
-      this._callEvent( "volumeRemoved", [id] )
+      this.emit( "volumeRemoved", [id] )
     }else{
       console.warn("The volume " + id + " cannot be removed because it does not exist.");
     }

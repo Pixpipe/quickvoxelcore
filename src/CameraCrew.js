@@ -12,12 +12,15 @@ import {
   Quaternion as BJSQuaternion
 } from 'babylonjs/es6.js'
 
-class CameraCrew {
+import { EventManager } from './EventManager.js'
+
+class CameraCrew extends EventManager {
   /**
    * Build the CameraCrew instance, using a BABYLON.Scene instance
    * @param {[type]} bjsScene [description]
    */
   constructor (renderEngine, canvasElem) {
+    super()
     this._renderEngine = renderEngine
     this._scene = renderEngine.getScene()
     this._canvas = canvasElem
@@ -66,10 +69,26 @@ class CameraCrew {
     }
 
 
-    this._renderEngine.on('rotate', function(quat, dominantRotationAxisName){
-      that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+    this._renderEngine.on('rotate', function(quat, axis, angle){
+      // if the axis is not give, it means it's an arbitrary rotation
+      // and nor a rotation perfomed around one of the plane normal vector
+      if (!axis) {
+        that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+        that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+        that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+        return
+      }
+
+
+      let closestOrthoCam = that._getOrthoCamDominantDirection (axis)
+
+      if (closestOrthoCam !== 'xOrtho')
+        that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+      if (closestOrthoCam !== 'yOrtho')
+        that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+      if (closestOrthoCam !== 'zOrtho')
+        that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+
 
       return
 
@@ -182,7 +201,8 @@ class CameraCrew {
     this._cameras[name].mode = BJSTargetCamera.ORTHOGRAPHIC_CAMERA
     this._cameras[name].setTarget(BABYLON.Vector3.Zero())
     this._cameras[name].rotation.z = Math.PI/2 // should def be rotation on x but BJS seems messed up on that...
-    this._cameras[name].rotationOrig = this._cameras[name].rotation.clone()
+    this._cameras[name].rotationOrig = this._cameras[name].rotation.clone() // saves the original rotation
+    this._cameras[name].positionOrig = this._cameras[name].position.clone() // saves the original position
     this._cameras[name].parent = this._orthoCamCarrier.xOrtho
     //this._scene.activeCameras.push(this._cameras[name])
 
@@ -192,6 +212,7 @@ class CameraCrew {
     this._cameras[name].mode = BJSTargetCamera.ORTHOGRAPHIC_CAMERA
     this._cameras[name].setTarget(BABYLON.Vector3.Zero())
     this._cameras[name].rotationOrig = this._cameras[name].rotation.clone()
+    this._cameras[name].positionOrig = this._cameras[name].position.clone() // saves the original position
     this._cameras[name].parent = this._orthoCamCarrier.yOrtho
     //this._scene.activeCameras.push(this._cameras[name])
 
@@ -201,6 +222,7 @@ class CameraCrew {
     this._cameras[name].mode = BJSTargetCamera.ORTHOGRAPHIC_CAMERA
     this._cameras[name].setTarget(BABYLON.Vector3.Zero())
     this._cameras[name].rotationOrig = this._cameras[name].rotation.clone()
+    this._cameras[name].positionOrig = this._cameras[name].position.clone() // saves the original position
     this._cameras[name].parent = this._orthoCamCarrier.zOrtho
     //this._scene.activeCameras.push(this._cameras[name])
 
@@ -208,6 +230,25 @@ class CameraCrew {
   }
 
 
+  /**
+   * Update the span of a given orthographic camera.
+   * Bear in mind two things:
+   * - the span is doubled (once on each direction of the cam starting from the center)
+   * - the span given is horizontal and the vertical span will be deducted based  on the ratio of the canvas.
+   * @param {String} camName - name of the camera ('main', 'xOrtho', 'yOrtho', 'zOrtho')
+   * @param {Number} span - Like the FOV but for an orthographic camera. Must be positive.
+   */
+  setOrthoCamSpan (camName, span) {
+    this._orthoCamSpan[camName] = span
+    this.updateOrthoCamSpan(camName)
+  }
+
+
+  /**
+   * Update the FOV of a given ortho cam, based on its span.
+   * Note: the span of a spacific ortho cam is changed by `setOrthoCamSpan()`
+   * @param  {String} camName - name of the camera ('main', 'xOrtho', 'yOrtho', 'zOrtho')
+   */
   updateOrthoCamSpan (camName) {
     this._cameras[camName].orthoLeft = -this._orthoCamSpan[camName]
     this._cameras[camName].orthoRight = this._orthoCamSpan[camName]
@@ -216,6 +257,9 @@ class CameraCrew {
   }
 
 
+  /**
+   * Update all FOV of all ortho camera based on their span
+   */
   updateAllOrthoCamSpan () {
     let orthoCamNames = Object.keys( this._orthoCamSpan )
     for (let i=0; i<orthoCamNames.length; i++) {
@@ -224,11 +268,19 @@ class CameraCrew {
   }
 
 
+  /**
+   * Get the list of camera names
+   * @return {Array} Array of strings, most likely ['main', 'xOrtho', 'yOrtho', 'zOrtho']
+   */
   getListOfCameras () {
     return Object.keys(this._cameras)
   }
 
 
+  /**
+   * Define what camera to use
+   * @param  {String} camName - name of the camera ('main', 'xOrtho', 'yOrtho', 'zOrtho')
+   */
   defineCamera (camName) {
     if (camName in this._cameras) {
       this._scene.activeCamera = this._cameras[camName]
@@ -239,6 +291,12 @@ class CameraCrew {
   }
 
 
+  /**
+   * Define the absolute angle of the camera, considering the original position represents
+   * the origin. This rotation will modify the upVector but keep the direction the camera is pointing
+   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {Number} angle - angle in radian (0 is noon, +pi/4 is 3oclock, +pi/2 is 6oclock, -pi/4 is 9oclock)
+   */
   angleOrthoCam (camName, angle) {
     if (camName === 'xOrtho')
       this._cameras[camName].rotation.z = this._cameras[camName].rotationOrig.z + angle
@@ -248,17 +306,69 @@ class CameraCrew {
       this._cameras[camName].rotation.z = this._cameras[camName].rotationOrig.z + angle
   }
 
-  // TODO rotateOrthoCam, same as angleOrthoCam but relative
+
+  /**
+   * Rotates the given camera relatively to its current state. The camera will keep its direction,
+   * only the upVector will be changed (giving the impresion of image spinning)
+   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {Number} angle - relative angle in radian
+   */
+  rotateOrthoCam (camName, angle) {
+    if (camName === 'xOrtho')
+      this._cameras[camName].rotation.z += angle
+    else if (camName === 'yOrtho')
+      this._cameras[camName].rotation.y += angle
+    else if (camName === 'zOrtho')
+      this._cameras[camName].rotation.z += angle
+  }
 
 
-  translateOrthoCam (camName, up, right) {
+  /**
+   * Modify the absolute position of the camera on its axis. The default position is (0, 0)
+   * when the camera is centered on the ortho planes origin.
+   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {Number} right - horizontal position of the camera on its axis. Positive is right, negative is left
+   * @param  {Number} up - vertical position of the camera on its axis. positive is up, negative is down
+   */
+  positionOrthoCam (camName, right=0, up=0) {
+    // up = +z
+    // right = +y
+    if (camName === 'xOrtho') {
+      this._cameras[camName].position.z = up
+      this._cameras[camName].position.y = right
+    }
+
+
+    // up = +z
+    // right = +x (but -x in webgl)
+    if (camName === 'yOrtho') {
+      this._cameras[camName].position.z = up
+      this._cameras[camName].position.x = right
+    }
+
+    // up = +y
+    // right = +x (but -x in webgl)
+    if (camName === 'zOrtho') {
+      this._cameras[camName].position.y = up
+      this._cameras[camName].position.x = right
+    }
+
+  }
+
+
+  /**
+   * Moves the given camera relatively to its curent position.
+   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {Number} right - moves to the right when positive, moves the the left when negative
+   * @param  {Number} up - moves up when positive, moves down when negative
+   */
+  translateOrthoCam (camName, right, up) {
     // up = +z
     // right = +y
     if (camName === 'xOrtho') {
       this._cameras[camName].position.z += up
       this._cameras[camName].position.y += right
     }
-
 
     // up = +z
     // right = +x (but -x in webgl)
@@ -273,7 +383,50 @@ class CameraCrew {
       this._cameras[camName].position.y += up
       this._cameras[camName].position.x -= right
     }
+  }
 
+
+  /**
+   * Get the ortho cam that points the most towards the given direction.
+   * (a dot product is performed for that)
+   * @param  {BABYLON.Vector3} refVec - a reference vector to test with
+   * @return {String} the ortho cam name that points the most towards this direction ('xOrtho', 'yOrtho' or 'zOrtho')
+   */
+  _getOrthoCamDominantDirection (refVec) {
+    let refVecNorm = refVec.normalizeToNew()
+
+    let dotMax = 0
+    let dominantVector = 0
+    let orthoCams = Object.keys( this._orthoCamCarrier )
+    let okCam = null
+
+    for (let i=0; i<orthoCams.length; i++) {
+      let camName = orthoCams[i]
+      let n = this._getOrthoCamWorldDirection(camName)
+      let dot = BJSVector3.Dot(refVecNorm, n )
+      let absDot = Math.abs(dot)
+
+      if (Math.abs(dot) > dotMax) {
+        dotMax = absDot
+        okCam = camName
+      }
+    }
+    return okCam
+  }
+
+
+  /**
+   * The reference direction is the
+   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @return {[type]}         [description]
+   */
+  _getOrthoCamWorldDirection (camName) {
+    let cam = this._cameras[camName]
+    // vector from the camera to the origin
+    let localCamDirection = cam.positionOrig.negate()
+    let camWorldMat = cam.getWorldMatrix() //cam.computeWorldMatrix(true)
+    let worldCamDir = BJSVector3.TransformCoordinates( localCamDirection, camWorldMat).normalize()
+    return worldCamDir
   }
 
 }
