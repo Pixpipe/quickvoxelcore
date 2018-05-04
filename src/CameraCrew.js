@@ -38,12 +38,23 @@ class CameraCrew extends EventManager {
     }
     this._initOrthoCamCarriers()
 
+    // originally, the 'xOtho' camera points toward the x direction, but this might
+    // change after some successive rotation, so this structure keeps track of it
+    // and is updated at every rotation
+    this._axisToCamera = {
+      x: 'xOrtho',
+      y: 'yOrtho',
+      z: 'zOrtho'
+    }
+
+    // the span, which is like the FOV but for perspective cam
     this._orthoCamSpan = {
       xOrtho: 250,
       yOrtho: 250,
       zOrtho: 250
     }
 
+    // all the camera objects, the orthos are initialized by _initOrthoCamera()
     this._cameras = {
       main: this._initPerspectiveCamera(),
       xOrtho: null,
@@ -70,6 +81,8 @@ class CameraCrew extends EventManager {
 
 
     this._renderEngine.on('rotate', function(quat, axis, angle){
+      that._updateOrthoCamDirectionLUT()
+
       // if the axis is not give, it means it's an arbitrary rotation
       // and nor a rotation perfomed around one of the plane normal vector
       if (!axis) {
@@ -79,84 +92,17 @@ class CameraCrew extends EventManager {
         return
       }
 
-
+      // if the rotation is around the normal vector of the ortho plane (one of the 3),
+      // we apply the rotation on the all the ortho cam except the one that has its
+      // directional vector along the rotation axis. This is to prevent the volume from
+      // spinning CW when this ortho cam is chosen.
       let closestOrthoCam = that._getOrthoCamDominantDirection (axis)
-
-
       if (closestOrthoCam !== 'xOrtho')
         that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
       if (closestOrthoCam !== 'yOrtho')
         that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
       if (closestOrthoCam !== 'zOrtho')
         that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-
-
-      return
-
-      if (dominantRotationAxisName === 'x') {
-        that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-        that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      } else if (dominantRotationAxisName === 'y') {
-        that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-        that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      } else if (dominantRotationAxisName === 'z') {
-        that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-        that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      }
-
-
-      return
-
-      let orthoCamWorldUp = null
-      let worldMat0 = null
-      let worldMat1 = null
-
-      if (dominantRotationAxisName === 'x') {
-        worldMat0 = that._cameras.xOrtho.computeWorldMatrix(true)
-        orthoCamWorldUp = BJSVector3.TransformNormal( that._cameras.xOrtho.upVector, worldMat0)
-      } else if (dominantRotationAxisName === 'y') {
-        worldMat0 = that._cameras.yOrtho.computeWorldMatrix(true)
-        orthoCamWorldUp = BJSVector3.TransformNormal( that._cameras.yOrtho.upVector, worldMat0)
-      } else if (dominantRotationAxisName === 'z') {
-        worldMat0 = that._cameras.zOrtho.computeWorldMatrix(true)
-        orthoCamWorldUp = BJSVector3.TransformNormal( that._cameras.zOrtho.upVector, worldMat0)
-      }
-
-      that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      that._orthoCamCarrier.xOrtho.computeWorldMatrix(true)
-      that._orthoCamCarrier.yOrtho.computeWorldMatrix(true)
-      that._orthoCamCarrier.zOrtho.computeWorldMatrix(true)
-
-      if (dominantRotationAxisName === 'x') {
-        worldMat1 = that._cameras.xOrtho.computeWorldMatrix(true)
-        let worldToLocalMat = BJSMatrix.Invert( worldMat1 )
-        let localNewUpVector = BJSVector3.TransformNormal( orthoCamWorldUp, worldToLocalMat)
-        that._cameras.xOrtho.upVector.set( localNewUpVector.x, localNewUpVector.y, localNewUpVector.z )
-
-      } else if (dominantRotationAxisName === 'y') {
-        worldMat1 = that._cameras.yOrtho.computeWorldMatrix(true)
-        let worldToLocalMat = BJSMatrix.Invert(worldMat1 )
-        let localNewUpVector = BJSVector3.TransformNormal( orthoCamWorldUp, worldToLocalMat)
-        that._cameras.yOrtho.upVector.set( localNewUpVector.x, localNewUpVector.y, localNewUpVector.z )
-
-      } else if (dominantRotationAxisName === 'z') {
-        worldMat1 = that._cameras.zOrtho.computeWorldMatrix(true)
-        let worldToLocalMat = BJSMatrix.Invert( worldMat1 )
-        let localNewUpVector = BJSVector3.TransformNormal( orthoCamWorldUp, worldToLocalMat)
-        that._cameras.zOrtho.upVector.set( localNewUpVector.x, localNewUpVector.y, localNewUpVector.z )
-      }
-
-      //that._orthoCamSystem.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      // TODO: do something to update the upVector of the plane that is not impacted by this rotation, otherwise, it spins on itself
-
-
-
-
-      //let yCamWorlUpVector = BJSVector3.TransformNormal( that._cameras.yOrtho.upVector, that._cameras.yOrtho.computeWorldMatrix(true) /*getWorldMatrix()*/)
-      //console.log( yCamWorlUpVector )
-
     })
   }
 
@@ -192,9 +138,15 @@ class CameraCrew extends EventManager {
   }
 
 
+  /**
+   * @private
+   * Initialize the ortho camera. The name given to them ('xOrtho', 'yOrtho', 'zOrtho') is
+   * based on their original target axis. The successive rotations that can be performed on there
+   * respective `_orthoCamCarrier` will induce their name to become irrelevant
+   *
+   */
   _initOrthoCamera () {
     let d = this._orthoCamDistance
-
 
     let name = 'xOrtho'
     let xOrthoPosition = this._renderEngine.getXDominantPlaneNormal().multiplyByFloats(d, d, d)
@@ -244,6 +196,8 @@ class CameraCrew extends EventManager {
     this.updateOrthoCamSpan(camName)
   }
 
+  // TODO: all these functions that take the name of the ortho camera must be doubled with
+  // an equivalent that takes the dominant direction such as `setOrthoCamSpanDominant('x', span)`
 
   /**
    * Update the FOV of a given ortho cam, based on its span.
@@ -279,7 +233,7 @@ class CameraCrew extends EventManager {
 
 
   /**
-   * Define what camera to use
+   * Define what camera to use, by its name.
    * @param  {String} camName - name of the camera ('main', 'xOrtho', 'yOrtho', 'zOrtho')
    */
   defineCamera (camName) {
@@ -430,9 +384,62 @@ class CameraCrew extends EventManager {
     let camCarrierWorldMat = carrier.getWorldMatrix() //cam.computeWorldMatrix(true)
     let worldCamDir = BJSVector3.TransformCoordinates( localCamDirection, camCarrierWorldMat).normalize()
     return worldCamDir
+  }
 
-    // TODO: tester pouquoi la matrice est toute pete! ca devrait etre un identite au debut.
-    // tester sans appliquer le quaternion pour voir...
+
+  /**
+   * Get the ortho cam that points the most towards X direction.
+   * Note: due to the sucessive rotation potentially performed on this camera, it
+   * is possible that the name of this camera is not 'xOrtho'
+   * @return {BABYLON.Camera} an orthographic camera
+   */
+  getXDominantOrthoCam (forceRecompute=false) {
+    if (forceRecompute)
+      return this._axisToCamera.x
+    else
+      return this._getOrthoCamDominantDirection (new BJSVector3(1, 0, 0))
+  }
+
+
+  /**
+   * Get the ortho cam that points the most towards Y direction.
+   * Note: due to the sucessive rotation potentially performed on this camera, it
+   * is possible that the name of this camera is not 'yOrtho'
+   * @return {BABYLON.Camera} an orthographic camera
+   */
+  getYDominantOrthoCam (forceRecompute=false) {
+    if (forceRecompute)
+      return this._axisToCamera.y
+    else
+      return this._getOrthoCamDominantDirection (new BJSVector3(0, 1, 0))
+  }
+
+
+  /**
+   * Get the ortho cam that points the most towards Z direction.
+   * Note: due to the sucessive rotation potentially performed on this camera, it
+   * is possible that the name of this camera is not 'zOrtho'
+   * @return {BABYLON.Camera} an orthographic camera
+   */
+  getZDominantOrthoCam (forceRecompute=false) {
+    if (forceRecompute)
+      return this._axisToCamera.z
+    else
+      return this._getOrthoCamDominantDirection (new BJSVector3(0, 0, 1))
+  }
+
+
+  /**
+   * @private
+   * Update the LUT that matches the dominant direction to an orthocam
+   * @return {[type]} [description]
+   */
+  _updateOrthoCamDirectionLUT () {
+    this._axisToCamera = {
+      x: this.getXDominantOrthoCam(true),
+      y: this.getYDominantOrthoCam(true),
+      z: this.getZDominantOrthoCam(true)
+    }
   }
 
 }
