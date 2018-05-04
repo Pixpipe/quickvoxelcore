@@ -82,6 +82,7 @@ class CameraCrew extends EventManager {
 
       let closestOrthoCam = that._getOrthoCamDominantDirection (axis)
 
+
       if (closestOrthoCam !== 'xOrtho')
         that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
       if (closestOrthoCam !== 'yOrtho')
@@ -422,11 +423,16 @@ class CameraCrew extends EventManager {
    */
   _getOrthoCamWorldDirection (camName) {
     let cam = this._cameras[camName]
+    let carrier = this._orthoCamCarrier[camName]
+
     // vector from the camera to the origin
     let localCamDirection = cam.positionOrig.negate()
-    let camWorldMat = cam.getWorldMatrix() //cam.computeWorldMatrix(true)
-    let worldCamDir = BJSVector3.TransformCoordinates( localCamDirection, camWorldMat).normalize()
+    let camCarrierWorldMat = carrier.getWorldMatrix() //cam.computeWorldMatrix(true)
+    let worldCamDir = BJSVector3.TransformCoordinates( localCamDirection, camCarrierWorldMat).normalize()
     return worldCamDir
+
+    // TODO: tester pouquoi la matrice est toute pete! ca devrait etre un identite au debut.
+    // tester sans appliquer le quaternion pour voir...
   }
 
 }
