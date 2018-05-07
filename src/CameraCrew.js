@@ -14,10 +14,36 @@ import {
 
 import { EventManager } from './EventManager.js'
 
+
+/**
+ * The CameraCrew provides four cameras (1 perspective and 3 orthographic) and
+ * a simplified API to control them. This include:
+ * - selection of the camera (for all 4 cams)
+ * - rotation (keep the target but change the up) - relative and absolute (only for ortho)
+ * - enlarging ratio - relative and absolute (only for ortho)
+ * - panning - relative and absolute (only for ortho)
+ *
+ * As you can read, the fine tunings are not available with the perspective camera,
+ * this is because a mouse control is attached to it.
+ * These functions are accesible by giving the name of the camera as argument.
+ * Camera have names they were initialized with: 'aOrtho', 'bOrtho' and 'cOrtho',
+ * in addition to the 'main', which is the perspective cam. Those camera can also
+ * be called by their shorter names 'a', 'b' and 'c' and by there *direction pointing*
+ * names.
+ * The *direction pointing* names are names given dinamically to each camera
+ * depending on the direction they are pointing. Of course, those names are updated
+ * at every single rotation to make sure the *direction pointing* names remain relevant.
+ * Those names are 'x', 'y' and 'z' and they refer to the MNI space (or Talairach coordinates).
+ *
+ * When using the CameraCrew in 'sinel view' mode (default, the view from only one camera is shown)
+ * then, the name 'current' can also be used to address the camera currenlty being used.
+ * @extends EventManager
+ */
 class CameraCrew extends EventManager {
   /**
    * Build the CameraCrew instance, using a BABYLON.Scene instance
-   * @param {[type]} bjsScene [description]
+   * @param {RenderEngine} renderEngine - the renderEngine instance created by QuickVoxelCore
+   * @param {Canvas} canvasElem - the canvas DOM element used by QuickVoxelCore
    */
   constructor (renderEngine, canvasElem) {
     super()
@@ -25,16 +51,18 @@ class CameraCrew extends EventManager {
     this._scene = renderEngine.getScene()
     this._canvas = canvasElem
     this._planeSystem = this._scene.getMeshByName('orthoPlaneSystem')
-
-    this._curentCam = null
+    this._isSingleView = true
+    this._currentCam = null
 
     this._orthoCamDistance = 500
     this._canvasRatio = this._canvas.height / this._canvas.width
 
+
+
     this._orthoCamCarrier = {
-      xOrtho: null,
-      yOrtho: null,
-      zOrtho: null
+      aOrtho: null,
+      bOrtho: null,
+      cOrtho: null
     }
     this._initOrthoCamCarriers()
 
@@ -42,41 +70,59 @@ class CameraCrew extends EventManager {
     // change after some successive rotation, so this structure keeps track of it
     // and is updated at every rotation
     this._axisToCamera = {
-      x: 'xOrtho',
-      y: 'yOrtho',
-      z: 'zOrtho'
+      x: 'aOrtho',
+      y: 'bOrtho',
+      z: 'cOrtho'
     }
 
     // the span, which is like the FOV but for perspective cam
     this._orthoCamSpan = {
-      xOrtho: 250,
-      yOrtho: 250,
-      zOrtho: 250
+      aOrtho: 250,
+      bOrtho: 250,
+      cOrtho: 250
     }
+
+    this._perspectiveCamName = 'main'
 
     // all the camera objects, the orthos are initialized by _initOrthoCamera()
     this._cameras = {
-      main: this._initPerspectiveCamera(),
-      xOrtho: null,
-      yOrtho: null,
-      zOrtho: null
+      aOrtho: null,
+      bOrtho: null,
+      cOrtho: null
     }
+
+    this._cameras[ this._perspectiveCamName ] = this._initPerspectiveCamera()
+
+    // so that we can address ortho cam with a shorter name
+    this._orthoCamShortNames = {
+      a: 'aOrtho',
+      b: 'bOrtho',
+      c: 'cOrtho'
+    }
+
+
+
     this._initOrthoCamera()
 
     this._initEvent()
 
     // The default camera is the 'main' aka. the perspective camera
-    this.defineCamera('main')
+    this.defineCamera(this._perspectiveCamName)
   }
 
 
+  /**
+   * @private
+   * Initialize some events
+   * @return {[type]} [description]
+   */
   _initEvent () {
     let that = this
 
     // when the window is resized, the internal canvas is possibly resized.
     window.onresize = function() {
       that._canvasRatio = that._canvas.height / that._canvas.width
-      that.updateAllOrthoCamSpan()
+      that._updateAllOrthoCamSpan()
     }
 
 
@@ -86,9 +132,9 @@ class CameraCrew extends EventManager {
       // if the axis is not give, it means it's an arbitrary rotation
       // and nor a rotation perfomed around one of the plane normal vector
       if (!axis) {
-        that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-        that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-        that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+        that._orthoCamCarrier.aOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+        that._orthoCamCarrier.bOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+        that._orthoCamCarrier.cOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
         return
       }
 
@@ -97,30 +143,39 @@ class CameraCrew extends EventManager {
       // directional vector along the rotation axis. This is to prevent the volume from
       // spinning CW when this ortho cam is chosen.
       let closestOrthoCam = that._getOrthoCamDominantDirection (axis)
-      if (closestOrthoCam !== 'xOrtho')
-        that._orthoCamCarrier.xOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      if (closestOrthoCam !== 'yOrtho')
-        that._orthoCamCarrier.yOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
-      if (closestOrthoCam !== 'zOrtho')
-        that._orthoCamCarrier.zOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+      if (closestOrthoCam !== 'aOrtho')
+        that._orthoCamCarrier.aOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+      if (closestOrthoCam !== 'bOrtho')
+        that._orthoCamCarrier.bOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+      if (closestOrthoCam !== 'cOrtho')
+        that._orthoCamCarrier.cOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
     })
   }
 
 
+  /**
+   * @private
+   * Initialize the carrier of the ortho cams
+   */
   _initOrthoCamCarriers () {
-    this._orthoCamCarrier.xOrtho = new BJSMesh( "xOrthoCamCarrier", this._scene )
-    this._orthoCamCarrier.xOrtho.rotationQuaternion = BJSQuaternion.Identity()
+    this._orthoCamCarrier.aOrtho = new BJSMesh( "aOrthoCamCarrier", this._scene )
+    this._orthoCamCarrier.aOrtho.rotationQuaternion = BJSQuaternion.Identity()
 
-    this._orthoCamCarrier.yOrtho = new BJSMesh( "yOrthoCamCarrier", this._scene )
-    this._orthoCamCarrier.yOrtho.rotationQuaternion = BJSQuaternion.Identity()
+    this._orthoCamCarrier.bOrtho = new BJSMesh( "bOrthoCamCarrier", this._scene )
+    this._orthoCamCarrier.bOrtho.rotationQuaternion = BJSQuaternion.Identity()
 
-    this._orthoCamCarrier.zOrtho = new BJSMesh( "zOrthoCamCarrier", this._scene )
-    this._orthoCamCarrier.zOrtho.rotationQuaternion = BJSQuaternion.Identity()
+    this._orthoCamCarrier.cOrtho = new BJSMesh( "cOrthoCamCarrier", this._scene )
+    this._orthoCamCarrier.cOrtho.rotationQuaternion = BJSQuaternion.Identity()
   }
 
 
+  /**
+   * @private
+   * Initialize the perspective cacamera
+   * @return {BABYLON.Camera} a viable perspective camera
+   */
   _initPerspectiveCamera () {
-    let mainCam = new BJSArcRotateCamera("main", Math.PI / 2, Math.PI / 2, 2, BJSVector3.Zero(), this._scene);
+    let mainCam = new BJSArcRotateCamera(this._perspectiveCamName, Math.PI / 2, Math.PI / 2, 2, BJSVector3.Zero(), this._scene);
     mainCam.inertia = 0.7;
     mainCam.setPosition( new BJSVector3(300, 300, 300) )
     mainCam.attachControl( this._canvas, true, true )
@@ -140,7 +195,7 @@ class CameraCrew extends EventManager {
 
   /**
    * @private
-   * Initialize the ortho camera. The name given to them ('xOrtho', 'yOrtho', 'zOrtho') is
+   * Initialize the ortho camera. The name given to them ('aOrtho', 'bOrtho', 'cOrtho') is
    * based on their original target axis. The successive rotations that can be performed on there
    * respective `_orthoCamCarrier` will induce their name to become irrelevant
    *
@@ -148,38 +203,73 @@ class CameraCrew extends EventManager {
   _initOrthoCamera () {
     let d = this._orthoCamDistance
 
-    let name = 'xOrtho'
-    let xOrthoPosition = this._renderEngine.getXDominantPlaneNormal().multiplyByFloats(d, d, d)
-    this._cameras[name] = new BJSFreeCamera(name, xOrthoPosition, this._scene)
+    let name = 'aOrtho'
+    let aOrthoPosition = this._renderEngine.getXDominantPlaneNormal().multiplyByFloats(d, d, d)
+    this._cameras[name] = new BJSFreeCamera(name, aOrthoPosition, this._scene)
     this._cameras[name].mode = BJSTargetCamera.ORTHOGRAPHIC_CAMERA
     this._cameras[name].setTarget(BABYLON.Vector3.Zero())
     this._cameras[name].rotation.z = Math.PI/2 // should def be rotation on x but BJS seems messed up on that...
     this._cameras[name].rotationOrig = this._cameras[name].rotation.clone() // saves the original rotation
     this._cameras[name].positionOrig = this._cameras[name].position.clone() // saves the original position
-    this._cameras[name].parent = this._orthoCamCarrier.xOrtho
+    this._cameras[name].parent = this._orthoCamCarrier.aOrtho
     //this._scene.activeCameras.push(this._cameras[name])
 
-    name = 'yOrtho'
-    let yOrthoPosition = this._renderEngine.getYDominantPlaneNormal().multiplyByFloats(-d, -d, -d) // minus sign to look from behind (right is right)
-    this._cameras[name] = new BJSFreeCamera(name, yOrthoPosition, this._scene)
+    name = 'bOrtho'
+    let bOrthoPosition = this._renderEngine.getYDominantPlaneNormal().multiplyByFloats(-d, -d, -d) // minus sign to look from behind (right is right)
+    this._cameras[name] = new BJSFreeCamera(name, bOrthoPosition, this._scene)
     this._cameras[name].mode = BJSTargetCamera.ORTHOGRAPHIC_CAMERA
     this._cameras[name].setTarget(BABYLON.Vector3.Zero())
     this._cameras[name].rotationOrig = this._cameras[name].rotation.clone()
     this._cameras[name].positionOrig = this._cameras[name].position.clone() // saves the original position
-    this._cameras[name].parent = this._orthoCamCarrier.yOrtho
+    this._cameras[name].parent = this._orthoCamCarrier.bOrtho
     //this._scene.activeCameras.push(this._cameras[name])
 
-    name = 'zOrtho'
-    let zOrthoPosition = this._renderEngine.getZDominantPlaneNormal().multiplyByFloats(d, d, d)
-    this._cameras[name] = new BJSFreeCamera(name, zOrthoPosition, this._scene)
+    name = 'cOrtho'
+    let cOrthoPosition = this._renderEngine.getZDominantPlaneNormal().multiplyByFloats(d, d, d)
+    this._cameras[name] = new BJSFreeCamera(name, cOrthoPosition, this._scene)
     this._cameras[name].mode = BJSTargetCamera.ORTHOGRAPHIC_CAMERA
     this._cameras[name].setTarget(BABYLON.Vector3.Zero())
     this._cameras[name].rotationOrig = this._cameras[name].rotation.clone()
     this._cameras[name].positionOrig = this._cameras[name].position.clone() // saves the original position
-    this._cameras[name].parent = this._orthoCamCarrier.zOrtho
+    this._cameras[name].parent = this._orthoCamCarrier.cOrtho
     //this._scene.activeCameras.push(this._cameras[name])
 
-    this.updateAllOrthoCamSpan()
+    this._updateAllOrthoCamSpan()
+  }
+
+
+  /**
+   * @private
+   * This method retrieves the native camera name based on one of the name a camera can be called by.
+   * This includes the actual name 'aOrtho', 'bOrtho', 'cOrtho' but also their
+   * short name 'a', 'b', 'c'. It also works with the name of the dominant
+   * axis (world) they are pointing to 'x', 'y', 'z'
+   * (note that the later one is updated at every rotation of the plane)
+   * In addtion, it can also be 'current' to get the name of the camera currently being used (this is when not using multicam)
+   * @param {String} name - one of the name of a camera
+   * @return {String} the native camera name, or null if name not found
+   */
+  _getCameraNameByName ( name ) {
+    // using the actual (full) name
+    if (name in this._cameras) {
+      return name
+    }
+
+    // using the short name
+    if (name in this._orthoCamShortNames) {
+      return this._orthoCamShortNames[name]
+    }
+
+    // using the dominant direction
+    if (name in this._axisToCamera) {
+      return this._axisToCamera[name]
+    }
+
+    if (name === 'current') {
+      return this._currentCam
+    }
+
+    return null
   }
 
 
@@ -188,23 +278,72 @@ class CameraCrew extends EventManager {
    * Bear in mind two things:
    * - the span is doubled (once on each direction of the cam starting from the center)
    * - the span given is horizontal and the vertical span will be deducted based  on the ratio of the canvas.
-   * @param {String} camName - name of the camera ('main', 'xOrtho', 'yOrtho', 'zOrtho')
+   * @param {String} camName - name of the camera ('main', 'aOrtho', 'bOrtho', 'cOrtho')
    * @param {Number} span - Like the FOV but for an orthographic camera. Must be positive.
    */
   setOrthoCamSpan (camName, span) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
     this._orthoCamSpan[camName] = span
-    this.updateOrthoCamSpan(camName)
+    this._updateOrthoCamSpan(camName)
   }
 
-  // TODO: all these functions that take the name of the ortho camera must be doubled with
-  // an equivalent that takes the dominant direction such as `setOrthoCamSpanDominant('x', span)`
 
   /**
+   * Multiply the enlargement of the ortho cam by a factor.
+   * A factor lower than 1 will make the image smaller, a factor higher than 1 will make the image bigger.
+   * Note: Under the hood, the camera span is multiplied by (1/factor).
+   * @param  {String} camName - name of the camera
+   * @param  {Number} factor - ratio to multiply the cam span with
+   */
+  zoomCamSpan (camName, factor) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
+    this._orthoCamSpan[camName] /= factor
+    this._updateOrthoCamSpan(camName)
+  }
+
+
+  /**
+   * Get the span used on the given camera.
+   * @param  {String} camName - one of the name of an orthographic camera
+   * @return {Number} the span curetly being used by this camera
+   */
+  getOthoCamSpan (camName) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
+    return this._orthoCamSpan[camName]
+  }
+
+
+  /**
+   * @private
    * Update the FOV of a given ortho cam, based on its span.
    * Note: the span of a spacific ortho cam is changed by `setOrthoCamSpan()`
-   * @param  {String} camName - name of the camera ('main', 'xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {String} camName - name of the camera ('main', 'aOrtho', 'bOrtho', 'cOrtho')
    */
-  updateOrthoCamSpan (camName) {
+  _updateOrthoCamSpan (camName) {
     this._cameras[camName].orthoLeft = -this._orthoCamSpan[camName]
     this._cameras[camName].orthoRight = this._orthoCamSpan[camName]
     this._cameras[camName].orthoTop = this._orthoCamSpan[camName] * this._canvasRatio
@@ -213,19 +352,20 @@ class CameraCrew extends EventManager {
 
 
   /**
+   * @private
    * Update all FOV of all ortho camera based on their span
    */
-  updateAllOrthoCamSpan () {
+  _updateAllOrthoCamSpan () {
     let orthoCamNames = Object.keys( this._orthoCamSpan )
     for (let i=0; i<orthoCamNames.length; i++) {
-      this.updateOrthoCamSpan( orthoCamNames[i] )
+      this._updateOrthoCamSpan( orthoCamNames[i] )
     }
   }
 
 
   /**
    * Get the list of camera names
-   * @return {Array} Array of strings, most likely ['main', 'xOrtho', 'yOrtho', 'zOrtho']
+   * @return {Array} Array of strings, most likely ['main', 'aOrtho', 'bOrtho', 'cOrtho']
    */
   getListOfCameras () {
     return Object.keys(this._cameras)
@@ -234,12 +374,16 @@ class CameraCrew extends EventManager {
 
   /**
    * Define what camera to use, by its name.
-   * @param  {String} camName - name of the camera ('main', 'xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {String} camName - name of the camera ('main', 'aOrtho', 'bOrtho', 'cOrtho')
    */
   defineCamera (camName) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
     if (camName in this._cameras) {
       this._scene.activeCamera = this._cameras[camName]
-      this._curentCam = camName
+      this._currentCam = camName
     } else {
       console.warn('The camera named ' +  + ' does not exist.');
     }
@@ -249,15 +393,24 @@ class CameraCrew extends EventManager {
   /**
    * Define the absolute angle of the camera, considering the original position represents
    * the origin. This rotation will modify the upVector but keep the direction the camera is pointing
-   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {String} camName - name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
    * @param  {Number} angle - angle in radian (0 is noon, +pi/4 is 3oclock, +pi/2 is 6oclock, -pi/4 is 9oclock)
    */
   angleOrthoCam (camName, angle) {
-    if (camName === 'xOrtho')
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
+    if (camName === 'aOrtho')
       this._cameras[camName].rotation.z = this._cameras[camName].rotationOrig.z + angle
-    else if (camName === 'yOrtho')
+    else if (camName === 'bOrtho')
       this._cameras[camName].rotation.y = this._cameras[camName].rotationOrig.y + angle
-    else if (camName === 'zOrtho')
+    else if (camName === 'cOrtho')
       this._cameras[camName].rotation.z = this._cameras[camName].rotationOrig.z + angle
   }
 
@@ -265,15 +418,24 @@ class CameraCrew extends EventManager {
   /**
    * Rotates the given camera relatively to its current state. The camera will keep its direction,
    * only the upVector will be changed (giving the impresion of image spinning)
-   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {String} camName - name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
    * @param  {Number} angle - relative angle in radian
    */
   rotateOrthoCam (camName, angle) {
-    if (camName === 'xOrtho')
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
+    if (camName === 'aOrtho')
       this._cameras[camName].rotation.z += angle
-    else if (camName === 'yOrtho')
+    else if (camName === 'bOrtho')
       this._cameras[camName].rotation.y += angle
-    else if (camName === 'zOrtho')
+    else if (camName === 'cOrtho')
       this._cameras[camName].rotation.z += angle
   }
 
@@ -281,14 +443,23 @@ class CameraCrew extends EventManager {
   /**
    * Modify the absolute position of the camera on its axis. The default position is (0, 0)
    * when the camera is centered on the ortho planes origin.
-   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {String} camName - name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
    * @param  {Number} right - horizontal position of the camera on its axis. Positive is right, negative is left
    * @param  {Number} up - vertical position of the camera on its axis. positive is up, negative is down
    */
   positionOrthoCam (camName, right=0, up=0) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
     // up = +z
     // right = +y
-    if (camName === 'xOrtho') {
+    if (camName === 'aOrtho') {
       this._cameras[camName].position.z = up
       this._cameras[camName].position.y = right
     }
@@ -296,14 +467,14 @@ class CameraCrew extends EventManager {
 
     // up = +z
     // right = +x (but -x in webgl)
-    if (camName === 'yOrtho') {
+    if (camName === 'bOrtho') {
       this._cameras[camName].position.z = up
       this._cameras[camName].position.x = right
     }
 
     // up = +y
     // right = +x (but -x in webgl)
-    if (camName === 'zOrtho') {
+    if (camName === 'cOrtho') {
       this._cameras[camName].position.y = up
       this._cameras[camName].position.x = right
     }
@@ -313,28 +484,37 @@ class CameraCrew extends EventManager {
 
   /**
    * Moves the given camera relatively to its curent position.
-   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @param  {String} camName - name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
    * @param  {Number} right - moves to the right when positive, moves the the left when negative
    * @param  {Number} up - moves up when positive, moves down when negative
    */
   translateOrthoCam (camName, right, up) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
     // up = +z
     // right = +y
-    if (camName === 'xOrtho') {
+    if (camName === 'aOrtho') {
       this._cameras[camName].position.z += up
       this._cameras[camName].position.y += right
     }
 
     // up = +z
     // right = +x (but -x in webgl)
-    if (camName === 'yOrtho') {
+    if (camName === 'bOrtho') {
       this._cameras[camName].position.z += up
       this._cameras[camName].position.x -= right
     }
 
     // up = +y
     // right = +x (but -x in webgl)
-    if (camName === 'zOrtho') {
+    if (camName === 'cOrtho') {
       this._cameras[camName].position.y += up
       this._cameras[camName].position.x -= right
     }
@@ -342,10 +522,11 @@ class CameraCrew extends EventManager {
 
 
   /**
+   * @private
    * Get the ortho cam that points the most towards the given direction.
    * (a dot product is performed for that)
    * @param  {BABYLON.Vector3} refVec - a reference vector to test with
-   * @return {String} the ortho cam name that points the most towards this direction ('xOrtho', 'yOrtho' or 'zOrtho')
+   * @return {String} the ortho cam name that points the most towards this direction ('aOrtho', 'bOrtho' or 'cOrtho')
    */
   _getOrthoCamDominantDirection (refVec) {
     let refVecNorm = refVec.normalizeToNew()
@@ -371,11 +552,17 @@ class CameraCrew extends EventManager {
 
 
   /**
-   * The reference direction is the
-   * @param  {String} camName - name of the camera ('xOrtho', 'yOrtho', 'zOrtho')
+   * @private
+   * Retrieve the normal vector in world coordinates towards which the camera points.
+   * Note that the x (left-right) is in native webGL (not reversed as in MNI space of Talairach coordinates)
+   * @param  {String} camName - name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
    * @return {[type]}         [description]
    */
   _getOrthoCamWorldDirection (camName) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
     let cam = this._cameras[camName]
     let carrier = this._orthoCamCarrier[camName]
 
@@ -388,44 +575,68 @@ class CameraCrew extends EventManager {
 
 
   /**
+   * Get the camera pointing normalized vector.
+   * Note: this vector complied to MNI space and Talairach coordinates regarding the 'x' axis,
+   * which means +x is on the right and -x is on the left (which is the opposite of OpenGL/WebGL conventions)
+   * @param  {String} camName - one of the name of the camera
+   * @return {Object} normalized vector {x: Number, y: Number, z: Number}
+   */
+  getCamTargetVector (camName) {
+    camName = this._getCameraNameByName(camName)
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
+    let webGlSpaceVector = this._getOrthoCamWorldDirection(camName)
+    return {
+      x: webGlSpaceVector.x * -1,
+      y: webGlSpaceVector.y,
+      z: webGlSpaceVector.z
+    }
+  }
+
+
+  /**
    * Get the ortho cam that points the most towards X direction.
    * Note: due to the sucessive rotation potentially performed on this camera, it
-   * is possible that the name of this camera is not 'xOrtho'
+   * is possible that the name of this camera is not 'aOrtho'
    * @return {BABYLON.Camera} an orthographic camera
    */
   getXDominantOrthoCam (forceRecompute=false) {
     if (forceRecompute)
-      return this._axisToCamera.x
-    else
       return this._getOrthoCamDominantDirection (new BJSVector3(1, 0, 0))
+    else
+      return this._axisToCamera.x
   }
 
 
   /**
    * Get the ortho cam that points the most towards Y direction.
    * Note: due to the sucessive rotation potentially performed on this camera, it
-   * is possible that the name of this camera is not 'yOrtho'
+   * is possible that the name of this camera is not 'bOrtho'
    * @return {BABYLON.Camera} an orthographic camera
    */
   getYDominantOrthoCam (forceRecompute=false) {
     if (forceRecompute)
-      return this._axisToCamera.y
-    else
       return this._getOrthoCamDominantDirection (new BJSVector3(0, 1, 0))
+    else
+      return this._axisToCamera.y
   }
 
 
   /**
    * Get the ortho cam that points the most towards Z direction.
    * Note: due to the sucessive rotation potentially performed on this camera, it
-   * is possible that the name of this camera is not 'zOrtho'
+   * is possible that the name of this camera is not 'cOrtho'
    * @return {BABYLON.Camera} an orthographic camera
    */
   getZDominantOrthoCam (forceRecompute=false) {
     if (forceRecompute)
-      return this._axisToCamera.z
-    else
       return this._getOrthoCamDominantDirection (new BJSVector3(0, 0, 1))
+    else
+      return this._axisToCamera.z
   }
 
 
@@ -442,6 +653,19 @@ class CameraCrew extends EventManager {
     }
   }
 
+
+  _isPerspectiveCam (camName) {
+    return (this._perspectiveCamName === camName)
+  }
+
+
+  /**
+   * Tell if the CameraCrew is currently using an orthographic camera in the 'single view' mode
+   * @return {Boolean} true is using an orthographic, false if using the perspective cam (and false if in multi view)
+   */
+  isUsingOrthoCam () {
+    return ((this._currentCam !== this._perspectiveCamName) && this._isSingleView)
+  }
 }
 
 export { CameraCrew }
