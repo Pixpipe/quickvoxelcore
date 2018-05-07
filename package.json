@@ -2,6 +2,7 @@
   "name": "quickvoxelcore",
   "version": "0.1.4",
   "description": "The core for QuickVoxel app",
+  "homepage": "https://github.com/Pixpipe/quickvoxelcore",
   "repository": "jonathanlurie/quickvoxelcore",
   "moduleName": "quickvoxelcore",
   "entry": "src/main.js",
@@ -32,6 +33,7 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.1.0",
     "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.0.0",
     "rollup-plugin-uglify": "^3.0.0",
     "serve": "^6.3.1",
     "standard": "^11.0.1"

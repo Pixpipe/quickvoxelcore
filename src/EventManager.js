@@ -4,7 +4,7 @@
 * Link     https://github.com/Pixpipe/quickvoxelcore
 * Lab      MCIN - Montreal Neurological Institute
 */
-*
+
 
 /**
  * The EventManager deals with events, create them, call them.

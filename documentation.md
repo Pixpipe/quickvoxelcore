@@ -4,18 +4,18 @@
 
 -   [Quickvoxel Core][1]
 -   [QuickvoxelCore][2]
-    -   [getRenderEngine][3]
-    -   [getVolumeCollection][4]
-    -   [mountVolumeOnSlotN][5]
-    -   [unmountVolumeFromSlotN][6]
-    -   [unmountVolumeWithId][7]
--   [VolumeCollection][8]
-    -   [addVolumeFromFile][9]
-    -   [addVolumeFromUrl][10]
-    -   [getVolume][11]
+    -   [getCameraCrew][3]
+    -   [getRenderEngine][4]
+    -   [getVolumeCollection][5]
+    -   [mountVolumeOnSlotN][6]
+    -   [unmountVolumeFromSlotN][7]
+    -   [unmountVolumeWithId][8]
+-   [VolumeCollection][9]
+    -   [addVolumeFromFile][10]
+    -   [addVolumeFromUrl][11]
     -   [getVolume][12]
-    -   [getVolumeIds][13]
-    -   [on][14]
+    -   [getVolume][13]
+    -   [getVolumeIds][14]
     -   [removeVolume][15]
 -   [RenderEngine][16]
     -   [displayVolumeSlotN][17]
@@ -40,11 +40,11 @@
     -   [setBlendingRatio][36]
     -   [setBlendMethod][37]
     -   [setBrightnessSlotN][38]
-    -   [setCameraPosition][39]
-    -   [setColormapOrientationSlotN][40]
-    -   [setColormapSlotN][41]
-    -   [setContrastSlotN][42]
-    -   [setPlaneSystemEulerAngle][43]
+    -   [setColormapOrientationSlotN][39]
+    -   [setColormapSlotN][40]
+    -   [setContrastSlotN][41]
+    -   [setPlaneSystemEulerAngle][42]
+    -   [setPosition][43]
     -   [setPosition][44]
     -   [setTimeIndexSlotN][45]
     -   [translateAlongXDominant][46]
@@ -63,11 +63,28 @@
 -   [ColormapManager][59]
     -   [getColormapCanvas][60]
     -   [getListOfColormaps][61]
--   [webGL2][62]
+-   [CameraCrew][62]
+    -   [angleOrthoCam][63]
+    -   [defineCamera][64]
+    -   [getCamTargetVector][65]
+    -   [getListOfCameras][66]
+    -   [getOthoCamSpan][67]
+    -   [getXDominantOrthoCam][68]
+    -   [getYDominantOrthoCam][69]
+    -   [getZDominantOrthoCam][70]
+    -   [isUsingOrthoCam][71]
+    -   [positionOrthoCam][72]
+    -   [rotateOrthoCam][73]
+    -   [setOrthoCamSpan][74]
+    -   [translateOrthoCam][75]
+    -   [zoomCamSpan][76]
+-   [EventManager][77]
+    -   [on][78]
+-   [webGL2][79]
 
 ## Quickvoxel Core
 
-![][63]
+![][80]
 
 **Quickvoxel Core** is a pure Javascript toolkit for volumetric visualization of neuro files in the web browser. Everything that happens in Quickvoxel is strictly client-side, without the need of an active server (i.e. can run on a Github page)
 
@@ -77,38 +94,38 @@ Features:
 -   Display volume in world/subject coordinates to align registered volumes
 -   **Obliques**
 -   Can **blend** two volumes with different methods
--   Apply **colormaps**  ([44 available][64])
+-   Apply **colormaps**  ([44 available][81])
 -   Adjust **contrast** and **brightness**
 
 Requirement:
 
 -   A modern web browser, compatible with WebGL2 (recent Chrome or Firefox)
 
-Quickvoxel Core is backed by [Pixpipe][65] for decoding volume files and process the data, and by [BabylonJS][66] for the WebGL2 rendering.
+Quickvoxel Core is backed by [Pixpipe][82] for decoding volume files and process the data, and by [BabylonJS][83] for the WebGL2 rendering.
 
-Since this project is a **core only**, it is not bound to any frontend framework and needs to be sugar coated with some UI elements to provide a proper user interaction. You can find a minimal 10-lines example [here][67] ([source][68]).  
+Since this project is a **core only**, it is not bound to any frontend framework and needs to be sugar coated with some UI elements to provide a proper user interaction. You can find a minimal 10-lines example [here][84] ([source][85]).  
 A lot of additional methods to do more interesting things with _Quickvoxel_ are implemented in the core and need to be tied to UI element to be fully usable. We'll see that in the following part.
 
 # Demo
 
 (Most of the demos are less than 20 lines)
 
--   [Simple with loading from URL][67] - [source][68]
--   [Simple with loading from a local file][69] - [source][70]
--   [Translate the plane][71] - [source][72]
--   [Oblique plane][73] - [source][74]
--   [With colormaps][75] - [source][76]
--   [Oblique plane, animated][77] - [source][78]
--   [Two volumes + blending + colormap][79] - [source][80]
--   [+ time series animated][81] - [source][82]
--   [+ animated translation][83] - [source][84]
--   [+ animated oblique][85] - [source][86]
+-   [Simple with loading from URL][84] - [source][85]
+-   [Simple with loading from a local file][86] - [source][87]
+-   [Translate the plane][88] - [source][89]
+-   [Oblique plane][90] - [source][91]
+-   [With colormaps][92] - [source][93]
+-   [Oblique plane, animated][94] - [source][95]
+-   [Two volumes + blending + colormap][96] - [source][97]
+-   [+ time series animated][98] - [source][99]
+-   [+ animated translation][100] - [source][101]
+-   [+ animated oblique][102] - [source][103]
 
-In addition [QuickGui][87] ([source][88]) is a more advanced project, developed for the **_#BrainHack2018_** in Montreal. It uses some features of Quickvoxel Core with a simple and accessible UI.
+In addition [QuickGui][104] ([source][105]) is a more advanced project, developed for the **_#BrainHack2018_** in Montreal. It uses some features of Quickvoxel Core with a simple and accessible UI.
 
 # API documentation
 
-[HERE][89]
+[HERE][106]
 
 # Install
 
@@ -281,11 +298,11 @@ volumeCollection.on("volumeReady", function(volume){
 })
 ```
 
-Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the [example here][70]. Then, the logic for mounting on a slot is the same.
+Alternatively, a volume can be loaded from you filesystem using a file dialog. Look at the [example here][87]. Then, the logic for mounting on a slot is the same.
 
 # Going Further
 
-The `RenderEngine` object has a lot of methods that can be used to tweak your visualization. Do no hesitate to consult the [API doc conserning the RenderEngine][90] to make sure you use them properly.  
+The `RenderEngine` object has a lot of methods that can be used to tweak your visualization. Do no hesitate to consult the [API doc conserning the RenderEngine][107] to make sure you use them properly.  
 
 Here is a list of what you can do:
 
@@ -330,6 +347,12 @@ can be called to provide more features.
 
 -   `canvasElem`  
 
+### getCameraCrew
+
+Get the CameraCrew instance in order to perform some camera manipulations
+
+Returns **[CameraCrew][108]** 
+
 ### getRenderEngine
 
 Get the rendering engine to perform some 3D tasks, such as interacting with the view
@@ -340,7 +363,7 @@ Returns **RenderingEngine**
 
 Get the volume collection, to access to some features such as adding/removing a volume
 
-Returns **[VolumeCollection][91]** 
+Returns **[VolumeCollection][109]** 
 
 ### mountVolumeOnSlotN
 
@@ -348,8 +371,8 @@ Mount the volume of the given id on the slot with the given index on the renderi
 
 **Parameters**
 
--   `n` **[Number][92]** the slot index
--   `volumeId` **[String][93]** the id of the volume within the collection
+-   `n` **[Number][110]** the slot index
+-   `volumeId` **[String][111]** the id of the volume within the collection
 
 ### unmountVolumeFromSlotN
 
@@ -374,6 +397,8 @@ Returns **\[type]** [description]
 Returns **\[type]** [description]
 
 ## VolumeCollection
+
+**Extends EventManager**
 
 The VolumeCollection is automatically initialized by the constructor of QuickVoxelCore.
 When the QuickVoxelCore object is created, the VolumeCollection can be fetched to perform actions directly on it.
@@ -410,17 +435,7 @@ Add a volume file to the collection, using an URL
 
 **Parameters**
 
--   `url` **[String][93]** url of the file
-
-### getVolume
-
-Get the volume of the given id
-
-**Parameters**
-
--   `id` **[String][93]** unique id of the volume within the collection
-
-Returns **([Volume][94] | null)** the volume if existing, or null if not existing
+-   `url` **[String][111]** url of the file
 
 ### getVolume
 
@@ -428,24 +443,25 @@ Get the `Volume` with the given id
 
 **Parameters**
 
--   `id` **[String][93]** id of a `Volume` within the collection
+-   `id` **[String][111]** id of a `Volume` within the collection
 
-Returns **[Volume][94]** the Volume instance with such id, or `null` if not found
+Returns **[Volume][112]** the Volume instance with such id, or `null` if not found
+
+### getVolume
+
+Get the volume of the given id
+
+**Parameters**
+
+-   `id` **[String][111]** unique id of the volume within the collection
+
+Returns **([Volume][112] | null)** the volume if existing, or null if not existing
 
 ### getVolumeIds
 
 Get the list of all volume ids available in this collection
 
 Returns **\[type]** [description]
-
-### on
-
-Define the callback attached to an event
-
-**Parameters**
-
--   `eventName` **[String][93]** the name of the event, must exist in this.\_events (with the value null)
--   `callback` **[Function][95]** the function associated to this event
 
 ### removeVolume
 
@@ -454,9 +470,11 @@ with the id of the volume in argument
 
 **Parameters**
 
--   `id` **[String][93]** id of the volume to remove
+-   `id` **[String][111]** id of the volume to remove
 
 ## RenderEngine
+
+**Extends EventManager**
 
 The RenderEngine is automatically initialized by the constructor of QuickVoxelCore.
 The engine in in charge of the visualization part by initializing the WebGL environment,
@@ -474,13 +492,13 @@ Display of hide the volume hosted on the Nth slot
 **Parameters**
 
 -   `n`  
--   `d` **[Boolean][96]** display is true, hide if false (optional, default `true`)
+-   `d` **[Boolean][113]** display is true, hide if false (optional, default `true`)
 
 ### getBlendMethodList
 
 Get the list of blending methods
 
-Returns **[Array][97]** the list of strings, names of the blending methods
+Returns **[Array][114]** the list of strings, names of the blending methods
 
 ### getColormapsCanvas
 
@@ -489,7 +507,7 @@ display one or more colormap in the UI.
 
 **Parameters**
 
--   `cmName` **[String][93]** name of the colormap to get
+-   `cmName` **[String][111]** name of the colormap to get
 
 Returns **Canvas** The HTML5 Canvas object, ready to be appended to a div
 
@@ -497,13 +515,13 @@ Returns **Canvas** The HTML5 Canvas object, ready to be appended to a div
 
 Get the list of colormaps available, by name
 
-Returns **[Array][97]** Array of strings
+Returns **[Array][114]** Array of strings
 
 ### getNumberOfVolumeSlots
 
 Get the total number of volume slot in the reder engine (taken of not)
 
-Returns **[Number][92]** 
+Returns **[Number][110]** 
 
 ### getPlaneSystemEulerAngle
 
@@ -529,9 +547,9 @@ Look if the volume with the given id is mounted in a slot
 
 **Parameters**
 
--   `id` **[String][93]** id of the volume to look for
+-   `id` **[String][111]** id of the volume to look for
 
-Returns **[Number][92]** index of the slot where the volume is mounted, or -1 if not mounted
+Returns **[Number][110]** index of the slot where the volume is mounted, or -1 if not mounted
 
 ### getXDominantPlaneNormal
 
@@ -564,9 +582,9 @@ Get if the Nth volume slot is already taken or not.
 
 **Parameters**
 
--   `n` **[Number][92]** index of the slot
+-   `n` **[Number][110]** index of the slot
 
-Returns **[Boolean][96]** true if already taken (or out of range), false if free
+Returns **[Boolean][113]** true if already taken (or out of range), false if free
 
 ### mountVolumeN
 
@@ -575,8 +593,8 @@ the given volume will be shown
 
 **Parameters**
 
--   `n` **[Number][92]** the index of the slot to mount the volume on (most likely 0 or 1)
--   `volume` **[Volume][94]** the volume to mount
+-   `n` **[Number][110]** the index of the slot to mount the volume on (most likely 0 or 1)
+-   `volume` **[Volume][112]** the volume to mount
 
 ### mountVolumeOnFirstEmptySlot
 
@@ -584,9 +602,9 @@ Mounts a volume in the first slot available. Will do nothing if no slot is free.
 
 **Parameters**
 
--   `volume` **[Volume][94]** the volume to mount
+-   `volume` **[Volume][112]** the volume to mount
 
-Returns **[Boolean][96]** true if found an ampty slot to mount, false if could not mount it
+Returns **[Boolean][113]** true if found an ampty slot to mount, false if could not mount it
 
 ### resetPosition
 
@@ -599,7 +617,7 @@ the X direction, from a relative angle (=adding rotation to the current system)
 
 **Parameters**
 
--   `angle` **[Number][92]** in radian
+-   `angle` **[Number][110]** in radian
 
 ### rotateAroundYDominant
 
@@ -608,7 +626,7 @@ the Y direction, from a relative angle (=adding rotation to the current system)
 
 **Parameters**
 
--   `angle` **[Number][92]** in radian
+-   `angle` **[Number][110]** in radian
 
 ### rotateAroundZDominant
 
@@ -617,7 +635,7 @@ the Z direction, from a relative angle (=adding rotation to the current system)
 
 **Parameters**
 
--   `angle` **[Number][92]** in radian
+-   `angle` **[Number][110]** in radian
 
 ### setBlendingRatio
 
@@ -627,7 +645,7 @@ if closer to 1, the secondary volume is more visible
 
 **Parameters**
 
--   `r` **[Number][92]** ratio
+-   `r` **[Number][110]** ratio
 
 ### setBlendMethod
 
@@ -641,7 +659,7 @@ Available are:
 **Parameters**
 
 -   `method`  
--   `m` **[String][93]** method of blending
+-   `m` **[String][111]** method of blending
 
 ### setBrightnessSlotN
 
@@ -649,17 +667,8 @@ Set the brightness value to apply on the volume of the slot n.
 
 **Parameters**
 
--   `n` **[Number][92]** index of the volume slot
--   `b` **[Number][92]** value of the brightness, neutral being 0 (optional, default `0.`)
-
-### setCameraPosition
-
-Set the position of a given camera, by its id
-
-**Parameters**
-
--   `cameraId` **[String][93]** the id of the camera
--   `position` **[Object][98]** ={x:100, y:100, z:100} - position of the camera (optional, default `{x:100,y:100,z:100}`)
+-   `n` **[Number][110]** index of the volume slot
+-   `b` **[Number][110]** value of the brightness, neutral being 0 (optional, default `0.`)
 
 ### setColormapOrientationSlotN
 
@@ -668,7 +677,7 @@ Set the orientation of the colormap used on the slot n, original or flipped
 **Parameters**
 
 -   `n`  
--   `orientation` **[Number][92]** 0 for original, 1 for fliped
+-   `orientation` **[Number][110]** 0 for original, 1 for fliped
 
 ### setColormapSlotN
 
@@ -676,8 +685,8 @@ Define the colormap the use on the texture loaded on the Nth slot
 
 **Parameters**
 
--   `n` **[Number][92]** index of the volume slot (most likely 0 or 1)
--   `cmName` **[String][93]** name of the colormap. Get the list of names with `.getListOfColormaps()`
+-   `n` **[Number][110]** index of the volume slot (most likely 0 or 1)
+-   `cmName` **[String][111]** name of the colormap. Get the list of names with `.getListOfColormaps()`
 
 ### setContrastSlotN
 
@@ -685,9 +694,9 @@ Set the contrast value to apply on the volume of the slot n.
 
 **Parameters**
 
--   `n` **[Number][92]** index of the volume slot
+-   `n` **[Number][110]** index of the volume slot
 -   `c`   (optional, default `1.`)
--   `b` **[Number][92]** value of the cotrast, neutral being 1
+-   `b` **[Number][110]** value of the cotrast, neutral being 1
 
 ### setPlaneSystemEulerAngle
 
@@ -695,9 +704,9 @@ Set the Euler angle of the plane system
 
 **Parameters**
 
--   `x` **[Number][92]** Rotation on x
--   `y` **[Number][92]** Rotation on y
--   `z` **[Number][92]** Rotation on z
+-   `x` **[Number][110]** Rotation on x
+-   `y` **[Number][110]** Rotation on y
+-   `z` **[Number][110]** Rotation on z
 
 ### setPosition
 
@@ -706,7 +715,16 @@ Not each position property have to be updated.
 
 **Parameters**
 
--   `position` **[Object][98]** The new position (optional, default `{x:undefined,y:undefined,z:undefined}`)
+-   `position` **[Object][115]** The new position (optional, default `{x:undefined,y:undefined,z:undefined}`)
+
+### setPosition
+
+Set the position of a given camera, by its id
+
+**Parameters**
+
+-   `position` **[Object][115]** ={x:100, y:100, z:100} - position of the camera (optional, default `{x:undefined,y:undefined,z:undefined}`)
+-   `cameraId` **[String][111]** the id of the camera
 
 ### setTimeIndexSlotN
 
@@ -715,8 +733,8 @@ If the time index is higher than the duration of the volume, it will loop with a
 
 **Parameters**
 
--   `n` **[Number][92]** index of the volume slot
--   `t` **[Number][92]** the time index
+-   `n` **[Number][110]** index of the volume slot
+-   `t` **[Number][110]** the time index
 
 ### translateAlongXDominant
 
@@ -724,7 +742,7 @@ Translate the plane system along the dominant X direction
 
 **Parameters**
 
--   `d` **[Number][92]** the distance to move along this vector (can be negative to move back)
+-   `d` **[Number][110]** the distance to move along this vector (can be negative to move back)
 
 ### translateAlongYDominant
 
@@ -732,7 +750,7 @@ Translate the plane system along the dominant Y direction
 
 **Parameters**
 
--   `d` **[Number][92]** the distance to move along this vector (can be negative to move back)
+-   `d` **[Number][110]** the distance to move along this vector (can be negative to move back)
 
 ### translateAlongZDominant
 
@@ -740,7 +758,7 @@ Translate the plane system along the dominant X direction
 
 **Parameters**
 
--   `d` **[Number][92]** the distance to move along this vector (can be negative to move back)
+-   `d` **[Number][110]** the distance to move along this vector (can be negative to move back)
 
 ### unmountVolumeN
 
@@ -778,13 +796,13 @@ Returns **\[type]** [description]
 
 Get a list of all available matrices for this volume, as strings
 
-Returns **[Array][97]** 
+Returns **[Array][114]** 
 
 ### getId
 
 Get the id of this volume
 
-Returns **[String][93]** the id
+Returns **[String][111]** the id
 
 ### getImage3D
 
@@ -798,7 +816,7 @@ Get the transformation matrix with the given name
 
 **Parameters**
 
--   `name` **[String][93]** name of the transform (most likely "v2t" or "v2t_center")
+-   `name` **[String][111]** name of the transform (most likely "v2t" or "v2t_center")
 
 Returns **BABYLON.Matrix** the matrix
 
@@ -813,7 +831,7 @@ Returns **BABYLON.RawTexture3D** the texture corresponding to this volume
 Get the number of time samples. fMRI (or diffusion) will have more than one
 while structural MRI will usually have only one.
 
-Returns **[Number][92]** 
+Returns **[Number][110]** 
 
 ### getValue
 
@@ -825,10 +843,10 @@ This just gives the value of the closest voxel.
 
 **Parameters**
 
--   `position` **[Object][98]** position in world coordinates (optional, default `{x:0,y:0,z:0}`)
--   `time` **[Number][92]** time index (makes sense only for time series) (optional, default `0`)
+-   `position` **[Object][115]** position in world coordinates (optional, default `{x:0,y:0,z:0}`)
+-   `time` **[Number][110]** time index (makes sense only for time series) (optional, default `0`)
 
-Returns **[Number][92]** the voxel intensity
+Returns **[Number][110]** the voxel intensity
 
 ## ColormapManager
 
@@ -841,7 +859,7 @@ and is not kept in memory.
 **Parameters**
 
 -   `scene` **BABYLON.Scene** the babylonjs scene (necessary to generate textures)
--   `nbSamples` **[Number][92]** number of samples generated per colormap (optional, default `512`)
+-   `nbSamples` **[Number][110]** number of samples generated per colormap (optional, default `512`)
 
 ### getColormapCanvas
 
@@ -850,7 +868,7 @@ This canvas elem can directly be `append` to some div.
 
 **Parameters**
 
--   `name` **[String][93]** the name of the colormap (default: 'default') (optional, default `'default'`)
+-   `name` **[String][111]** the name of the colormap (default: 'default') (optional, default `'default'`)
 
 Returns **Canvas** the Canvas object, of height 1px and width 512px (this depends on the default)
 
@@ -858,7 +876,196 @@ Returns **Canvas** the Canvas object, of height 1px and width 512px (this depend
 
 Get the list of colormap names
 
-Returns **[Array][97]** a list of Strings
+Returns **[Array][114]** a list of Strings
+
+## CameraCrew
+
+**Extends EventManager**
+
+The CameraCrew provides four cameras (1 perspective and 3 orthographic) and
+a simplified API to control them. This include:
+
+-   selection of the camera (for all 4 cams)
+-   rotation (keep the target but change the up) - relative and absolute (only for ortho)
+-   enlarging ratio - relative and absolute (only for ortho)
+-   panning - relative and absolute (only for ortho)
+
+As you can read, the fine tunings are not available with the perspective camera,
+this is because a mouse control is attached to it.
+These functions are accesible by giving the name of the camera as argument.
+Camera have names they were initialized with: 'aOrtho', 'bOrtho' and 'cOrtho',
+in addition to the 'main', which is the perspective cam. Those camera can also
+be called by their shorter names 'a', 'b' and 'c' and by there _direction pointing_
+names.
+The _direction pointing_ names are names given dinamically to each camera
+depending on the direction they are pointing. Of course, those names are updated
+at every single rotation to make sure the _direction pointing_ names remain relevant.
+Those names are 'x', 'y' and 'z' and they refer to the MNI space (or Talairach coordinates).
+
+When using the CameraCrew in 'sinel view' mode (default, the view from only one camera is shown)
+then, the name 'current' can also be used to address the camera currenlty being used.
+
+**Parameters**
+
+-   `renderEngine` **[RenderEngine][116]** the renderEngine instance created by QuickVoxelCore
+-   `canvasElem` **Canvas** the canvas DOM element used by QuickVoxelCore
+
+### angleOrthoCam
+
+Define the absolute angle of the camera, considering the original position represents
+the origin. This rotation will modify the upVector but keep the direction the camera is pointing
+
+**Parameters**
+
+-   `camName` **[String][111]** name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
+-   `angle` **[Number][110]** angle in radian (0 is noon, +pi/4 is 3oclock, +pi/2 is 6oclock, -pi/4 is 9oclock)
+
+### defineCamera
+
+Define what camera to use, by its name.
+
+**Parameters**
+
+-   `camName` **[String][111]** name of the camera ('main', 'aOrtho', 'bOrtho', 'cOrtho')
+
+### getCamTargetVector
+
+Get the camera pointing normalized vector.
+Note: this vector complied to MNI space and Talairach coordinates regarding the 'x' axis,
+which means +x is on the right and -x is on the left (which is the opposite of OpenGL/WebGL conventions)
+
+**Parameters**
+
+-   `camName` **[String][111]** one of the name of the camera
+
+Returns **[Object][115]** normalized vector {x: Number, y: Number, z: Number}
+
+### getListOfCameras
+
+Get the list of camera names
+
+Returns **[Array][114]** Array of strings, most likely ['main', 'aOrtho', 'bOrtho', 'cOrtho']
+
+### getOthoCamSpan
+
+Get the span used on the given camera.
+
+**Parameters**
+
+-   `camName` **[String][111]** one of the name of an orthographic camera
+
+Returns **[Number][110]** the span curetly being used by this camera
+
+### getXDominantOrthoCam
+
+Get the ortho cam that points the most towards X direction.
+Note: due to the sucessive rotation potentially performed on this camera, it
+is possible that the name of this camera is not 'aOrtho'
+
+**Parameters**
+
+-   `forceRecompute` **[Boolean][113]** force recomputing is true, get last value from the LUT if false (default: false) (optional, default `false`)
+
+Returns **[String][111]** the name of the camera pointing towards X direction
+
+### getYDominantOrthoCam
+
+Get the ortho cam that points the most towards Y direction.
+Note: due to the sucessive rotation potentially performed on this camera, it
+is possible that the name of this camera is not 'bOrtho'
+
+**Parameters**
+
+-   `forceRecompute` **[Boolean][113]** force recomputing is true, get last value from the LUT if false (default: false) (optional, default `false`)
+
+Returns **[String][111]** the name of the camera pointing towards Y direction
+
+### getZDominantOrthoCam
+
+Get the ortho cam that points the most towards Z direction.
+Note: due to the sucessive rotation potentially performed on this camera, it
+is possible that the name of this camera is not 'cOrtho'
+
+**Parameters**
+
+-   `forceRecompute` **[Boolean][113]** force recomputing is true, get last value from the LUT if false (default: false) (optional, default `false`)
+
+Returns **[String][111]** the name of the camera pointing towards Z direction
+
+### isUsingOrthoCam
+
+Tell if the CameraCrew is currently using an orthographic camera in the 'single view' mode
+
+Returns **[Boolean][113]** true is using an orthographic, false if using the perspective cam (and false if in multi view)
+
+### positionOrthoCam
+
+Modify the absolute position of the camera on its axis. The default position is (0, 0)
+when the camera is centered on the ortho planes origin.
+
+**Parameters**
+
+-   `camName` **[String][111]** name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
+-   `right` **[Number][110]** horizontal position of the camera on its axis. Positive is right, negative is left (optional, default `0`)
+-   `up` **[Number][110]** vertical position of the camera on its axis. positive is up, negative is down (optional, default `0`)
+
+### rotateOrthoCam
+
+Rotates the given camera relatively to its current state. The camera will keep its direction,
+only the upVector will be changed (giving the impresion of image spinning)
+
+**Parameters**
+
+-   `camName` **[String][111]** name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
+-   `angle` **[Number][110]** relative angle in radian
+
+### setOrthoCamSpan
+
+Update the span of a given orthographic camera.
+Bear in mind two things:
+
+-   the span is doubled (once on each direction of the cam starting from the center)
+-   the span given is horizontal and the vertical span will be deducted based  on the ratio of the canvas.
+
+**Parameters**
+
+-   `camName` **[String][111]** name of the camera ('main', 'aOrtho', 'bOrtho', 'cOrtho')
+-   `span` **[Number][110]** Like the FOV but for an orthographic camera. Must be positive.
+
+### translateOrthoCam
+
+Moves the given camera relatively to its curent position.
+
+**Parameters**
+
+-   `camName` **[String][111]** name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
+-   `right` **[Number][110]** moves to the right when positive, moves the the left when negative
+-   `up` **[Number][110]** moves up when positive, moves down when negative
+
+### zoomCamSpan
+
+Multiply the enlargement of the ortho cam by a factor.
+A factor lower than 1 will make the image smaller, a factor higher than 1 will make the image bigger.
+Note: Under the hood, the camera span is multiplied by (1/factor).
+
+**Parameters**
+
+-   `camName` **[String][111]** name of the camera
+-   `factor` **[Number][110]** ratio to multiply the cam span with
+
+## EventManager
+
+The EventManager deals with events, create them, call them.
+This class is mostly for being inherited from.
+
+### on
+
+Define an event, with a name associated with a function
+
+**Parameters**
+
+-   `eventName` **[String][111]** Name to give to the event
+-   `callback` **[Function][117]** function associated to the even
 
 ## webGL2
 
@@ -873,35 +1080,35 @@ if (!quickvoxelcore.webGL2()){
 }
 ```
 
-Returns **[Boolean][96]** true if compatible with WebGL2, false if not
+Returns **[Boolean][113]** true if compatible with WebGL2, false if not
 
 [1]: #quickvoxel-core
 
 [2]: #quickvoxelcore
 
-[3]: #getrenderengine
+[3]: #getcameracrew
 
-[4]: #getvolumecollection
+[4]: #getrenderengine
 
-[5]: #mountvolumeonslotn
+[5]: #getvolumecollection
 
-[6]: #unmountvolumefromslotn
+[6]: #mountvolumeonslotn
 
-[7]: #unmountvolumewithid
+[7]: #unmountvolumefromslotn
 
-[8]: #volumecollection
+[8]: #unmountvolumewithid
 
-[9]: #addvolumefromfile
+[9]: #volumecollection
 
-[10]: #addvolumefromurl
+[10]: #addvolumefromfile
 
-[11]: #getvolume
+[11]: #addvolumefromurl
 
-[12]: #getvolume-1
+[12]: #getvolume
 
-[13]: #getvolumeids
+[13]: #getvolume-1
 
-[14]: #on
+[14]: #getvolumeids
 
 [15]: #removevolume
 
@@ -951,17 +1158,17 @@ Returns **[Boolean][96]** true if compatible with WebGL2, false if not
 
 [38]: #setbrightnessslotn
 
-[39]: #setcameraposition
+[39]: #setcolormaporientationslotn
 
-[40]: #setcolormaporientationslotn
+[40]: #setcolormapslotn
 
-[41]: #setcolormapslotn
+[41]: #setcontrastslotn
 
-[42]: #setcontrastslotn
+[42]: #setplanesystemeulerangle
 
-[43]: #setplanesystemeulerangle
+[43]: #setposition
 
-[44]: #setposition
+[44]: #setposition-1
 
 [45]: #settimeindexslotn
 
@@ -997,76 +1204,114 @@ Returns **[Boolean][96]** true if compatible with WebGL2, false if not
 
 [61]: #getlistofcolormaps-1
 
-[62]: #webgl2
+[62]: #cameracrew
 
-[63]: ./assets/images/qv_logo_horizontal.png
+[63]: #angleorthocam
 
-[64]: http://www.pixpipe.io/pixpipejs/examples/colormap.html
+[64]: #definecamera
 
-[65]: https://github.com/Pixpipe/pixpipejs
+[65]: #getcamtargetvector
 
-[66]: https://www.babylonjs.com/
+[66]: #getlistofcameras
 
-[67]: http://www.pixpipe.io/quickvoxelcore/examples/simple.html
+[67]: #getothocamspan
 
-[68]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html
+[68]: #getxdominantorthocam
 
-[69]: http://www.pixpipe.io/quickvoxelcore/examples/simpleFile.html
+[69]: #getydominantorthocam
 
-[70]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html
+[70]: #getzdominantorthocam
 
-[71]: http://www.pixpipe.io/quickvoxelcore/examples/translate.html
+[71]: #isusingorthocam
 
-[72]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/translate.html
+[72]: #positionorthocam
 
-[73]: http://www.pixpipe.io/quickvoxelcore/examples/oblique.html
+[73]: #rotateorthocam
 
-[74]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique.html
+[74]: #setorthocamspan
 
-[75]: http://www.pixpipe.io/quickvoxelcore/examples/colormaps.html
+[75]: #translateorthocam
 
-[76]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/colormaps.html
+[76]: #zoomcamspan
 
-[77]: http://www.pixpipe.io/quickvoxelcore/examples/oblique2.html
+[77]: #eventmanager
 
-[78]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique2.html
+[78]: #on
 
-[79]: http://www.pixpipe.io/quickvoxelcore/examples/double.html
+[79]: #webgl2
 
-[80]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/double.html
+[80]: ./assets/images/qv_logo_horizontal.png
 
-[81]: http://www.pixpipe.io/quickvoxelcore/examples/time.html
+[81]: http://www.pixpipe.io/pixpipejs/examples/colormap.html
 
-[82]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html
+[82]: https://github.com/Pixpipe/pixpipejs
 
-[83]: http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html
+[83]: https://www.babylonjs.com/
 
-[84]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html
+[84]: http://www.pixpipe.io/quickvoxelcore/examples/simple.html
 
-[85]: http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html
+[85]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html
 
-[86]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html
+[86]: http://www.pixpipe.io/quickvoxelcore/examples/simpleFile.html
 
-[87]: http://me.jonathanlurie.fr/quickgui/public/
+[87]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html
 
-[88]: https://github.com/jonathanlurie/quickgui
+[88]: http://www.pixpipe.io/quickvoxelcore/examples/translate.html
 
-[89]: http://www.pixpipe.io/quickvoxelcore/doc/
+[89]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/translate.html
 
-[90]: http://www.pixpipe.io/quickvoxelcore/doc/#renderengine
+[90]: http://www.pixpipe.io/quickvoxelcore/examples/oblique.html
 
-[91]: #volumecollection
+[91]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique.html
 
-[92]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[92]: http://www.pixpipe.io/quickvoxelcore/examples/colormaps.html
 
-[93]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[93]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/colormaps.html
 
-[94]: #volume
+[94]: http://www.pixpipe.io/quickvoxelcore/examples/oblique2.html
 
-[95]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[95]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique2.html
 
-[96]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[96]: http://www.pixpipe.io/quickvoxelcore/examples/double.html
 
-[97]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[97]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/double.html
 
-[98]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[98]: http://www.pixpipe.io/quickvoxelcore/examples/time.html
+
+[99]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html
+
+[100]: http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html
+
+[101]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html
+
+[102]: http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html
+
+[103]: https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html
+
+[104]: http://me.jonathanlurie.fr/quickgui/public/
+
+[105]: https://github.com/jonathanlurie/quickgui
+
+[106]: http://www.pixpipe.io/quickvoxelcore/doc/
+
+[107]: http://www.pixpipe.io/quickvoxelcore/doc/#renderengine
+
+[108]: #cameracrew
+
+[109]: #volumecollection
+
+[110]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+[111]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[112]: #volume
+
+[113]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+
+[114]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[115]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+[116]: #renderengine
+
+[117]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function

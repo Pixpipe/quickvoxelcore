@@ -10,6 +10,7 @@ import nodeResolve from 'rollup-plugin-node-resolve'
 import builtins from 'rollup-plugin-node-builtins'
 import globals from 'rollup-plugin-node-globals'
 import glsl from 'rollup-plugin-glsl'
+import replace from 'rollup-plugin-replace'
 
 export default [
   {
@@ -22,6 +23,12 @@ export default [
     },
 
     plugins: [
+      replace({
+        exclude: 'node_modules/**',
+        delimiters: ['<@', '@>'],
+        APP_NAME: pkg.name,
+        APP_VERSION: pkg.version
+      }),
       nodeResolve({
         preferBuiltins: false
       }),

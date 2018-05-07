@@ -608,7 +608,8 @@ class CameraCrew extends EventManager {
    * Get the ortho cam that points the most towards X direction.
    * Note: due to the sucessive rotation potentially performed on this camera, it
    * is possible that the name of this camera is not 'aOrtho'
-   * @return {BABYLON.Camera} an orthographic camera
+   * @param {Boolean} forceRecompute - force recomputing is true, get last value from the LUT if false (default: false)
+   * @return {String} the name of the camera pointing towards X direction
    */
   getXDominantOrthoCam (forceRecompute=false) {
     if (forceRecompute)
@@ -622,7 +623,8 @@ class CameraCrew extends EventManager {
    * Get the ortho cam that points the most towards Y direction.
    * Note: due to the sucessive rotation potentially performed on this camera, it
    * is possible that the name of this camera is not 'bOrtho'
-   * @return {BABYLON.Camera} an orthographic camera
+   * @param {Boolean} forceRecompute - force recomputing is true, get last value from the LUT if false (default: false)
+   * @return {String} the name of the camera pointing towards Y direction
    */
   getYDominantOrthoCam (forceRecompute=false) {
     if (forceRecompute)
@@ -636,7 +638,8 @@ class CameraCrew extends EventManager {
    * Get the ortho cam that points the most towards Z direction.
    * Note: due to the sucessive rotation potentially performed on this camera, it
    * is possible that the name of this camera is not 'cOrtho'
-   * @return {BABYLON.Camera} an orthographic camera
+   * @param {Boolean} forceRecompute - force recomputing is true, get last value from the LUT if false (default: false)
+   * @return {String} the name of the camera pointing towards Z direction
    */
   getZDominantOrthoCam (forceRecompute=false) {
     if (forceRecompute)

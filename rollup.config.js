@@ -6,7 +6,8 @@ import commonjs from 'rollup-plugin-commonjs'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import uglify from 'rollup-plugin-uglify'
-import glsl from 'rollup-plugin-glsl';
+import glsl from 'rollup-plugin-glsl'
+import replace from 'rollup-plugin-replace'
 
 export default [
 
@@ -21,6 +22,12 @@ export default [
     },
 
     plugins: [
+      replace({
+        exclude: 'node_modules/**',
+        delimiters: ['<@', '@>'],
+        APP_NAME: pkg.name,
+        APP_VERSION: pkg.version
+      }),
       nodeResolve({
         preferBuiltins: false
       }),
@@ -44,6 +51,12 @@ export default [
     },
 
     plugins: [
+      replace({
+        exclude: 'node_modules/**',
+        delimiters: ['<@', '@>'],
+        APP_NAME: pkg.name,
+        APP_VERSION: pkg.version
+      }),
       nodeResolve({
         preferBuiltins: false
       }),
@@ -72,6 +85,12 @@ export default [
     },
 
     plugins: [
+      replace({
+        exclude: 'node_modules/**',
+        delimiters: ['<@', '@>'],
+        APP_NAME: pkg.name,
+        APP_VERSION: pkg.version
+      }),
       nodeResolve({
         preferBuiltins: false
       }),
