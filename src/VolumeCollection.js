@@ -1,6 +1,12 @@
-import { UrlToArrayBufferReader, FileToArrayBufferReader, Image3DGenericDecoderAlt } from 'pixpipe/dist/pixpipe.esmodule.js'
-//import * as BABYLON from 'babylonjs/es6.js'
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/quickvoxelcore
+* Lab      MCIN - Montreal Neurological Institute
+*/
 
+
+import { UrlToArrayBufferReader, FileToArrayBufferReader, Image3DGenericDecoderAlt } from 'pixpipe/dist/pixpipe.esmodule.js'
 import { Volume } from './Volume.js'
 import { EventManager } from './EventManager.js'
 

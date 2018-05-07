@@ -1,6 +1,11 @@
-//import pixpipe from 'pixpipe'
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/quickvoxelcore
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
 import { Colormap } from 'pixpipe/dist/pixpipe.esmodule.js'
-//import * as BABYLON from 'babylonjs/es6.js'
 import { RawTexture as BJSRawTexture, Engine as BJSEngine, Texture as BJSTexture} from 'babylonjs/es6.js'
 
 

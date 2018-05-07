@@ -1,3 +1,11 @@
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/quickvoxelcore
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
 /**
  * Know if the current environment is webGL2 compatible.
  * Usage:

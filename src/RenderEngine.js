@@ -1,4 +1,11 @@
-//import * as BABYLON from 'babylonjs/es6.js'
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/quickvoxelcore
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
 import {
   Effect as BJSEffect,
   Engine as BJSEngine,

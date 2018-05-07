@@ -1,3 +1,11 @@
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/quickvoxelcore
+* Lab      MCIN - Montreal Neurological Institute
+*/
+*
+
 /**
  * The EventManager deals with events, create them, call them.
  * This class is mostly for being inherited from.

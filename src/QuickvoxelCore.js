@@ -1,3 +1,11 @@
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/quickvoxelcore
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
 import { RenderEngine } from './RenderEngine.js'
 import { VolumeCollection } from './VolumeCollection.js'
 import { CameraCrew } from './CameraCrew.js'

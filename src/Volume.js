@@ -1,4 +1,17 @@
-import { Matrix as BJSMatrix, RawTexture3D as BJSRawTexture3D, Engine as BJSEngine, Texture as BJSTexture } from 'babylonjs/es6.js'
+/*
+* Author   Jonathan Lurie - http://me.jonathanlurie.fr
+* License  MIT
+* Link     https://github.com/Pixpipe/quickvoxelcore
+* Lab      MCIN - Montreal Neurological Institute
+*/
+
+
+import {
+  Matrix as BJSMatrix,
+  RawTexture3D as BJSRawTexture3D,
+  Engine as BJSEngine,
+  Texture as BJSTexture
+} from 'babylonjs/es6.js'
 
 /**
  * A Volume instance is a volumetric representation of some data that can be queried, displayed and identified.
