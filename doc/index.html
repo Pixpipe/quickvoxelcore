@@ -340,6 +340,12 @@
                       </a></li>
                       
                       <li><a
+                        href='#renderengineshoworiginaxis'
+                        class='regular pre-open'>
+                        showOriginAxis
+                      </a></li>
+                      
+                      <li><a
                         href='#renderenginetranslatealongxdominant'
                         class='regular pre-open'>
                         translateAlongXDominant
@@ -819,16 +825,19 @@ volumeCollection.on(<span class="hljs-string">"volumeReady"</span>, <span class=
 <h1>TODO</h1>
 <p>In what is probably the order of future developments:</p>
 <ul>
-<li class="task-list-item"><input type="checkbox" disabled> Add method to automatically position the main (perspective) camera along the <em>dominant</em> X Y or Z</li>
-<li class="task-list-item"><input type="checkbox" disabled> Add a method to force the main (perspective) camera to follow the center of the plane system</li>
-<li class="task-list-item"><input type="checkbox" disabled> Add XYZ axis of a grid system to know where we are</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add events for when a volume asked to be loadedm so that UI can display a spinner or something</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add anatomical names for camera ('sagittal', 'axial', 'coronal')</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add examples for multi camera usage</li>
 <li class="task-list-item"><input type="checkbox" disabled> Masking capabilities (as a 3rd slot that has special features)</li>
 <li class="task-list-item"><input type="checkbox" disabled> Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)</li>
 <li class="task-list-item"><input type="checkbox" disabled> Try to build 3D textures without having to perform a conversion from float32 to uint8</li>
-<li class="task-list-item"><input type="checkbox" disabled> Add 3 cameras that are always facing each of the ortho planes</li>
-<li class="task-list-item"><input type="checkbox" disabled> Gives the possibility to change the camera</li>
 <li class="task-list-item"><input type="checkbox" disabled> Have a split view options with the 4 camera (3 orthos + 1 perspective)</li>
 <li class="task-list-item"><input type="checkbox" checked disabled> Check if WebGL2 is enabled</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Add 3 cameras that are always facing each of the ortho planes</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Gives the possibility to change the camera</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Add method to automatically position a camera along the <em>dominant</em> X Y or Z</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Add XYZ axis of a grid system to know where we are</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Add a method to force the main (perspective) camera to follow the center of the plane system</li>
 </ul>
 
   
@@ -1481,6 +1490,74 @@ and added to the collection with a given index.</p>
 
   
 
+  <p>Get the volume of the given id</p>
+
+
+  <div class='pre p1 fill-light mt0'>getVolume(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): (<a href="#volume">Volume</a> | null)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
+	    unique id of the volume within the collection
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>(<a href="#volume">Volume</a> | null)</code>:
+        the volume if existing, or null if not existing
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='volumecollectiongetvolume'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>getVolume(id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
   <p>Get the <code>Volume</code> with the given id</p>
 
 
@@ -1522,74 +1599,6 @@ and added to the collection with a given index.</p>
         the Volume instance with such id, or 
 <code>null</code>
  if not found
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='volumecollectiongetvolume'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getVolume(id)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Get the volume of the given id</p>
-
-
-  <div class='pre p1 fill-light mt0'>getVolume(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): (<a href="#volume">Volume</a> | null)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    unique id of the volume within the collection
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code>(<a href="#volume">Volume</a> | null)</code>:
-        the volume if existing, or null if not existing
 
       
     
@@ -3614,6 +3623,66 @@ If the time index is higher than the duration of the volume, it will loop with a
           <div>
             <span class='code bold'>t</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
 	    the time index
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='renderengineshoworiginaxis'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>showOriginAxis(b)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Show of hide the axis that displays the origin</p>
+
+
+  <div class='pre p1 fill-light mt0'>showOriginAxis(b: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>b</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">Boolean</a>)</code>
+	    true will show, false will hide
 
           </div>
           

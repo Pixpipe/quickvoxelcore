@@ -63,8 +63,6 @@ class CameraCrew extends EventManager {
     this._orthoCamDistance = 500
     this._canvasRatio = this._canvas.height / this._canvas.width
 
-
-
     this._orthoCamCarrier = {
       aOrtho: null,
       bOrtho: null,
@@ -106,10 +104,7 @@ class CameraCrew extends EventManager {
       c: 'cOrtho'
     }
 
-
-
     this._initOrthoCamera()
-
     this._initEvent()
 
     // The default camera is the 'main' aka. the perspective camera
@@ -156,6 +151,12 @@ class CameraCrew extends EventManager {
       if (closestOrthoCam !== 'cOrtho')
         that._orthoCamCarrier.cOrtho.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
     })
+
+    // when a translation of the ortho planes is done, the main (perspective) camera follows
+    // the center.
+    this._renderEngine.on('translate', function(newPosition){
+      that._cameras[ that._perspectiveCamName ].setTarget(newPosition)
+    })
   }
 
 
@@ -181,21 +182,22 @@ class CameraCrew extends EventManager {
    * @return {BABYLON.Camera} a viable perspective camera
    */
   _initPerspectiveCamera () {
-    let mainCam = new BJSArcRotateCamera(this._perspectiveCamName, Math.PI / 2, Math.PI / 2, 2, BJSVector3.Zero(), this._scene);
+    let mainCam = new BJSArcRotateCamera(this._perspectiveCamName, Math.PI / 2, Math.PI / 2, 2, BJSVector3.Zero(), this._scene)
     mainCam.inertia = 0.7;
     mainCam.setPosition( new BJSVector3(300, 300, 300) )
-    mainCam.attachControl( this._canvas, true, true )
-    mainCam.upperBetaLimit = null;
-    mainCam.lowerBetaLimit = null;
+    mainCam.attachControl( this._canvas, false, false )
+    mainCam.upperBetaLimit = null
+    mainCam.lowerBetaLimit = null
+    mainCam.panningSensibility﻿ = 30;
 
     // remove the pole lock
     this._scene.registerBeforeRender(function(){
       if(mainCam.beta <= 0){
-        mainCam.beta += Math.PI * 2;
+        mainCam.beta += Math.PI * 2
       }
     });
 
-    return mainCam;
+    return mainCam
   }
 
 

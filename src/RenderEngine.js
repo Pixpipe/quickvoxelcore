@@ -18,7 +18,9 @@ import {
   Matrix as BJSMatrix,
   Mesh as BJSMesh,
   Quaternion as BJSQuaternion,
-  MeshBuilder as BJSMeshBuilder
+  MeshBuilder as BJSMeshBuilder,
+  Color4 as BJSColor4,
+  StandardMaterial as BJSStandardMaterial
 } from 'babylonjs/es6.js'
 
 import worldcoordtexture3dFrag from './shaders/worldcoordtexture3d.frag.glsl'
@@ -54,12 +56,7 @@ class RenderEngine extends EventManager {
     this._emptyTexture3D = this._initEmpty3dTexture()
     this._shaderMaterial = this._initShaderMaterial()
     this._planeSystem = this._initOrthoPlaneSystem()
-
-    this._events = {
-      rotate: [],
-      translate: [],
-    }
-
+    this._originAxis = this._initOriginAxis()
 
     this._mountedVolumes = [
       null, // primary volume
@@ -275,6 +272,8 @@ class RenderEngine extends EventManager {
     if (position.z !== undefined) {
       this._planeSystem.position.z = position.z;
     }
+
+    this.emit('translate', [this._planeSystem.position.clone()])
   }
 
 
@@ -647,6 +646,7 @@ class RenderEngine extends EventManager {
     let dominantVector = this.getXDominantPlaneNormal()
     let translation = dominantVector.multiplyByFloats( d, d, d  )
     this._planeSystem.position.addInPlace( translation )
+    this.emit('translate', [this._planeSystem.position.clone()])
   }
 
   /**
@@ -657,6 +657,7 @@ class RenderEngine extends EventManager {
     let dominantVector = this.getYDominantPlaneNormal()
     let translation = dominantVector.multiplyByFloats( d, d, d  )
     this._planeSystem.position.addInPlace( translation )
+    this.emit('translate', [this._planeSystem.position.clone()])
   }
 
 
@@ -668,6 +669,7 @@ class RenderEngine extends EventManager {
     let dominantVector = this.getZDominantPlaneNormal()
     let translation = dominantVector.multiplyByFloats( d, d, d )
     this._planeSystem.position.addInPlace( translation )
+    this.emit('translate', [this._planeSystem.position.clone()])
   }
 
 
@@ -691,6 +693,61 @@ class RenderEngine extends EventManager {
     let newQuat = BJSQuaternion.RotationYawPitchRoll(y, x, z)
     this._planeSystem.rotationQuaternion = newQuat
     this.emit('rotate', [this._planeSystem.rotationQuaternion, null, null]) // here, 'dominantAxis' is null because it can be arbitrary
+  }
+
+
+  _initOriginAxis() {
+    let originAxis = new BJSMesh( "originAxis", this._scene )
+    let tubeLength = 10
+
+    let xCylinder = BJSMeshBuilder.CreateCylinder('xAxis',  {
+      height: tubeLength,
+      diameterTop: 1,
+      diameterBottom: 1,
+      tessellation: 32
+    }, this._scene)
+    xCylinder.rotation.z = Math.PI/2
+    xCylinder.position.x = -tubeLength * 0.5
+    xCylinder.parent = originAxis
+    let xAxisMaterial = new BJSStandardMaterial("xAxisMaterial", this._scene)
+    xAxisMaterial.emissiveColor = new BJSColor3(0.3, 1, 0.3)
+    xCylinder.material = xAxisMaterial
+
+    let yCylinder = BJSMeshBuilder.CreateCylinder('yAxis',  {
+      height: tubeLength,
+      diameterTop: 1,
+      diameterBottom: 1,
+      tessellation: 32
+    }, this._scene)
+    yCylinder.position.y = tubeLength * 0.5
+    yCylinder.parent = originAxis
+    let yAxisMaterial = new BJSStandardMaterial("yAxisMaterial", this._scene)
+    yAxisMaterial.emissiveColor = new BJSColor3(0.3, 0.3, 1)
+    yCylinder.material = yAxisMaterial
+
+    let zCylinder = BJSMeshBuilder.CreateCylinder('zAxis',  {
+      height: tubeLength,
+      diameterTop: 1,
+      diameterBottom: 1,
+      tessellation: 32
+    }, this._scene)
+    zCylinder.rotation.x = Math.PI/2
+    zCylinder.position.z = tubeLength * 0.5
+    zCylinder.parent = originAxis
+    let zAxisMaterial = new BJSStandardMaterial("zAxisMaterial", this._scene)
+    zAxisMaterial.emissiveColor = new BJSColor3(1, 0.3, 0.3)
+    zCylinder.material = zAxisMaterial
+
+    return originAxis
+  }
+
+
+  /**
+   * Show of hide the axis that displays the origin
+   * @param  {Boolean}  b - true will show, false will hide
+   */
+  showOriginAxis (b) {
+    this._originAxis.setEnabled(b)
   }
 
 

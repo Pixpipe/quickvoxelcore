@@ -217,10 +217,9 @@ Here is a list of what you can do:
 
 # TODO
 In what is probably the order of future developments:
+- [ ] Add events for when a volume asked to be loadedm so that UI can display a spinner or something
+- [ ] Add anatomical names for camera ('sagittal', 'axial', 'coronal')
 - [ ] Add examples for multi camera usage
-- [ ] Add method to automatically position the main (perspective) camera along the *dominant* X Y or Z
-- [ ] Add a method to force the main (perspective) camera to follow the center of the plane system
-- [ ] Add XYZ axis of a grid system to know where we are
 - [ ] Masking capabilities (as a 3rd slot that has special features)
 - [ ] Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)
 - [ ] Try to build 3D textures without having to perform a conversion from float32 to uint8
@@ -228,3 +227,6 @@ In what is probably the order of future developments:
 - [x] Check if WebGL2 is enabled
 - [x] Add 3 cameras that are always facing each of the ortho planes
 - [x] Gives the possibility to change the camera
+- [x] Add method to automatically position a camera along the *dominant* X Y or Z
+- [x] Add XYZ axis of a grid system to know where we are
+- [x] Add a method to force the main (perspective) camera to follow the center of the plane system
