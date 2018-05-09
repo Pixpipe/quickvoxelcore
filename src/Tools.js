@@ -22,3 +22,18 @@ export function webGL2 () {
   var dummyGL = document.createElement("canvas").getContext("webgl2")
   return !!dummyGL;
 }
+
+
+/**
+ * Gives the property name in the object that has the given value
+ * @param  {Object} object - an object that may contain a property associated with a specific value
+ * @param  {Object} value - a value to look for
+ * @return {String} Name of the first property that has the given value. Or null if not found
+ */
+export function getKeyFromValue (object, value) {
+  for (let key in object) {
+    if (object[key] === value)
+      return key
+  }
+  return null
+}

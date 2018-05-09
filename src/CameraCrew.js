@@ -19,7 +19,7 @@ import {
 } from 'babylonjs/es6.js'
 
 import { EventManager } from './EventManager.js'
-
+import { getKeyFromValue } from './Tools.js'
 
 /**
  * The CameraCrew provides four cameras (1 perspective and 3 orthographic) and
@@ -62,6 +62,7 @@ class CameraCrew extends EventManager {
 
     this._orthoCamDistance = 500
     this._canvasRatio = this._canvas.height / this._canvas.width
+    this._perspectiveCamName = 'main'
 
     this._orthoCamCarrier = {
       aOrtho: null,
@@ -69,6 +70,7 @@ class CameraCrew extends EventManager {
       cOrtho: null
     }
     this._initOrthoCamCarriers()
+
 
     // originally, the 'xOtho' camera points toward the x direction, but this might
     // change after some successive rotation, so this structure keeps track of it
@@ -78,6 +80,7 @@ class CameraCrew extends EventManager {
       y: 'bOrtho',
       z: 'cOrtho'
     }
+    this._axisToCamera[ this._perspectiveCamName ] = this._perspectiveCamName
 
     // the span, which is like the FOV but for perspective cam
     this._orthoCamSpan = {
@@ -86,15 +89,12 @@ class CameraCrew extends EventManager {
       cOrtho: 250
     }
 
-    this._perspectiveCamName = 'main'
-
     // all the camera objects, the orthos are initialized by _initOrthoCamera()
     this._cameras = {
       aOrtho: null,
       bOrtho: null,
       cOrtho: null
     }
-
     this._cameras[ this._perspectiveCamName ] = this._initPerspectiveCamera()
 
     // so that we can address ortho cam with a shorter name
@@ -103,6 +103,15 @@ class CameraCrew extends EventManager {
       b: 'bOrtho',
       c: 'cOrtho'
     }
+    this._orthoCamShortNames[ this._perspectiveCamName ] = this._perspectiveCamName
+
+    // anatomical names match to an axis direction
+    this._orthoCamAnatomicalNames = {
+      sagittal: 'x',
+      coronal: 'y',
+      axial: 'z'
+    }
+    this._orthoCamAnatomicalNames[ this._perspectiveCamName ] = this._perspectiveCamName
 
     this._initOrthoCamera()
     this._initEvent()
@@ -258,6 +267,11 @@ class CameraCrew extends EventManager {
    * @return {String} the native camera name, or null if name not found
    */
   _getCameraNameByName ( name ) {
+
+    if (name === 'current') {
+      return this._currentCam
+    }
+
     // using the actual (full) name
     if (name in this._cameras) {
       return name
@@ -273,11 +287,43 @@ class CameraCrew extends EventManager {
       return this._axisToCamera[name]
     }
 
-    if (name === 'current') {
-      return this._currentCam
+    // using the anatomical name leads to choose a main direction
+    if (name in this._orthoCamAnatomicalNames) {
+      return this._axisToCamera[this._orthoCamAnatomicalNames[name]]
     }
 
     return null
+  }
+
+
+  /**
+   * Get the dominant axis name from the native camera name
+   * @param  {String}  camName - native camera name, such as 'aOtho', 'bOrtho' or 'cOrtho'
+   * @return {String} dominant axis name of the camera target vector, such as 'x', 'y' or 'z'
+   */
+  _getCameraAxisNameFromNativeName (camName) {
+    return getKeyFromValue( this._axisToCamera, camName )
+  }
+
+
+  /**
+   * Get the anatomical name of the camera currently being used.
+   * @return {String} 'coronal', 'sagittal', 'axial' or 'main' (for perspective)
+   */
+  getCurrentCameraAnatomicalName () {
+    let axisName = this._getCameraAxisNameFromNativeName( this._currentCam )
+    let anatName = getKeyFromValue( this._orthoCamAnatomicalNames, axisName )
+    return anatName
+  }
+
+
+  /**
+   * Get the dominant axis name of the camera currenlty in use
+   * @return {String} 'x', 'y', 'z' or 'main' (for perspective)
+   */
+  getCurrentCameraMainAxis () {
+    let axisName = this._getCameraAxisNameFromNativeName( this._currentCam )
+    return axisName
   }
 
 
@@ -657,11 +703,9 @@ class CameraCrew extends EventManager {
    * @return {[type]} [description]
    */
   _updateOrthoCamDirectionLUT () {
-    this._axisToCamera = {
-      x: this.getXDominantOrthoCam(true),
-      y: this.getYDominantOrthoCam(true),
-      z: this.getZDominantOrthoCam(true)
-    }
+    this._axisToCamera.x = this.getXDominantOrthoCam(true)
+    this._axisToCamera.y = this.getYDominantOrthoCam(true)
+    this._axisToCamera.z = this.getZDominantOrthoCam(true)
   }
 
 

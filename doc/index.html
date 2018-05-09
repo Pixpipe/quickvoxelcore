@@ -496,6 +496,12 @@
                       <li class='h5'><span>Instance members</span></li>
                       
                       <li><a
+                        href='#cameracrew_getcameraaxisnamefromnativename'
+                        class='regular pre-open'>
+                        _getCameraAxisNameFromNativeName
+                      </a></li>
+                      
+                      <li><a
                         href='#cameracrewangleorthocam'
                         class='regular pre-open'>
                         angleOrthoCam
@@ -511,6 +517,18 @@
                         href='#cameracrewgetcamtargetvector'
                         class='regular pre-open'>
                         getCamTargetVector
+                      </a></li>
+                      
+                      <li><a
+                        href='#cameracrewgetcurrentcameraanatomicalname'
+                        class='regular pre-open'>
+                        getCurrentCameraAnatomicalName
+                      </a></li>
+                      
+                      <li><a
+                        href='#cameracrewgetcurrentcameramainaxis'
+                        class='regular pre-open'>
+                        getCurrentCameraMainAxis
                       </a></li>
                       
                       <li><a
@@ -617,6 +635,16 @@
               
                 
                 <li><a
+                  href='#getkeyfromvalue'
+                  class="">
+                  getKeyFromValue
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
                   href='#webgl2'
                   class="">
                   webGL2
@@ -666,15 +694,18 @@ A lot of additional methods to do more interesting things with <em>Quickvoxel</e
 <p>(Most of the demos are less than 20 lines)</p>
 <ul>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/simple.html">Simple with loading from URL</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/simpleSpinner.html">Simple with loading from URL, with a loading spinner and events</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleSpinner.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/simpleFile.html">Simple with loading from a local file</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/translate.html">Translate the plane</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/translate.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/oblique.html">Oblique plane</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/colormaps.html">With colormaps</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/colormaps.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/oblique2.html">Oblique plane, animated</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique2.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/double.html">Two volumes + blending + colormap</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/double.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleSpinner.html">Two volumes + blending + colormap + loading spinner</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleSpinner.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/time.html">+ time series animated</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html">+ animated translation</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html">+ animated oblique</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslateCameraCrew.html">Changing cameras</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslateCameraCrew.html">source</a></li>
 </ul>
 <p>In addition <a href="http://me.jonathanlurie.fr/quickgui/public/">QuickGui</a> (<a href="https://github.com/jonathanlurie/quickgui">source</a>) is a more advanced project, developed for the <strong><em>#BrainHack2018</em></strong> in Montreal. It uses some features of Quickvoxel Core with a simple and accessible UI.</p>
 <h1>API documentation</h1>
@@ -825,19 +856,22 @@ volumeCollection.on(<span class="hljs-string">"volumeReady"</span>, <span class=
 <h1>TODO</h1>
 <p>In what is probably the order of future developments:</p>
 <ul>
-<li class="task-list-item"><input type="checkbox" disabled> Add events for when a volume asked to be loadedm so that UI can display a spinner or something</li>
-<li class="task-list-item"><input type="checkbox" disabled> Add anatomical names for camera ('sagittal', 'axial', 'coronal')</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add a link to source to each example</li>
 <li class="task-list-item"><input type="checkbox" disabled> Add examples for multi camera usage</li>
 <li class="task-list-item"><input type="checkbox" disabled> Masking capabilities (as a 3rd slot that has special features)</li>
 <li class="task-list-item"><input type="checkbox" disabled> Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)</li>
 <li class="task-list-item"><input type="checkbox" disabled> Try to build 3D textures without having to perform a conversion from float32 to uint8</li>
 <li class="task-list-item"><input type="checkbox" disabled> Have a split view options with the 4 camera (3 orthos + 1 perspective)</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add a collection of meshes</li>
+<li class="task-list-item"><input type="checkbox" disabled> Add a collection of point clouds</li>
 <li class="task-list-item"><input type="checkbox" checked disabled> Check if WebGL2 is enabled</li>
 <li class="task-list-item"><input type="checkbox" checked disabled> Add 3 cameras that are always facing each of the ortho planes</li>
 <li class="task-list-item"><input type="checkbox" checked disabled> Gives the possibility to change the camera</li>
 <li class="task-list-item"><input type="checkbox" checked disabled> Add method to automatically position a camera along the <em>dominant</em> X Y or Z</li>
 <li class="task-list-item"><input type="checkbox" checked disabled> Add XYZ axis of a grid system to know where we are</li>
 <li class="task-list-item"><input type="checkbox" checked disabled> Add a method to force the main (perspective) camera to follow the center of the plane system</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Add events for when a volume asked to be loaded so that UI can display a spinner or something</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Add anatomical names for camera ('sagittal', 'axial', 'coronal')</li>
 </ul>
 
   
@@ -1312,10 +1346,11 @@ Once one of these two method is called, a <code>Volume</code> instance is create
 and added to the collection with a given index.</p>
 <p>VolumeCollection provides some events, so that actions can be triggered during the lifecycle of a <code>Volume</code>:</p>
 <ul>
+<li><code>startAddingVolume</code> is called when a new volume is about to be added. This event is convenient mostly for UI purpose so that we can for example show a loading spinner, that then will be hidden when the event <code>volumeAdded</code> or <code>errorAddingVolume</code> are called</li>
 <li><code>volumeAdded</code> is called when the volume is parsed and added to the collection. But its webGL texture is not ready yet! The callbacks attached to this event will have the volume object as argument.</li>
 <li><code>volumeReady</code>called after <code>volumeAdded</code>, at the moment the added volume has its WegGL 3D texture ready. At this stage, a volume is ready to be displayed.The callbacks attached to this event will have the volume object as argument.</li>
 <li><code>volumeRemoved</code> is called when a volume is removed from the collection with the method <code>.removeVolume(id)</code>. The callbacks attached to this event will have the volume id (string) as argument.</li>
-<li><code>errorAddingVolume</code> is called when a volume failled to be added with <code>.addVolumeFromUrl()</code> and <code>.addVolumeFromFile()</code>. The callbacks attached to this event will have the url or the HTML5 File object as argument.</li>
+<li><code>errorAddingVolume</code> is called when a volume failled to be added with <code>.addVolumeFromUrl()</code> and <code>.addVolumeFromFile()</code>. The callbacks attached to this event will have the url or the filename (if opened from file dialog) as argument.</li>
 </ul>
 <p>To each event can be attached multiple callbacks, they will simply be called successivelly in the order the were declared. To assiciate a callback function to an event, just do:</p>
 <pre><code>myVolumeCollection.on("volumeReady", function(volume){
@@ -1490,74 +1525,6 @@ and added to the collection with a given index.</p>
 
   
 
-  <p>Get the volume of the given id</p>
-
-
-  <div class='pre p1 fill-light mt0'>getVolume(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): (<a href="#volume">Volume</a> | null)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    unique id of the volume within the collection
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code>(<a href="#volume">Volume</a> | null)</code>:
-        the volume if existing, or null if not existing
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='volumecollectiongetvolume'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>getVolume(id)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
   <p>Get the <code>Volume</code> with the given id</p>
 
 
@@ -1599,6 +1566,74 @@ and added to the collection with a given index.</p>
         the Volume instance with such id, or 
 <code>null</code>
  if not found
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='volumecollectiongetvolume'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>getVolume(id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the volume of the given id</p>
+
+
+  <div class='pre p1 fill-light mt0'>getVolume(id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): (<a href="#volume">Volume</a> | null)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
+	    unique id of the volume within the collection
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code>(<a href="#volume">Volume</a> | null)</code>:
+        the volume if existing, or null if not existing
 
       
     
@@ -4833,6 +4868,74 @@ then, the name 'current' can also be used to address the camera currenlty being 
     <div class='py1 quiet mt1 prose-big'>Instance Members</div>
     <div class="clearfix">
   
+    <div class='border-bottom' id='cameracrew_getcameraaxisnamefromnativename'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>_getCameraAxisNameFromNativeName(camName)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the dominant axis name from the native camera name</p>
+
+
+  <div class='pre p1 fill-light mt0'>_getCameraAxisNameFromNativeName(camName: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>camName</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
+	    native camera name, such as 'aOtho', 'bOrtho' or 'cOrtho'
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
+        dominant axis name of the camera target vector, such as 'x', 'y' or 'z'
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
     <div class='border-bottom' id='cameracrewangleorthocam'>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
@@ -5014,6 +5117,114 @@ which means +x is on the right and -x is on the left (which is the opposite of O
       <div class='py1 quiet mt1 prose-big'>Returns</div>
       <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></code>:
         normalized vector {x: Number, y: Number, z: Number}
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='cameracrewgetcurrentcameraanatomicalname'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>getCurrentCameraAnatomicalName()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the anatomical name of the camera currently being used.</p>
+
+
+  <div class='pre p1 fill-light mt0'>getCurrentCameraAnatomicalName(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
+        'coronal', 'sagittal', 'axial' or 'main' (for perspective)
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='cameracrewgetcurrentcameramainaxis'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>getCurrentCameraMainAxis()</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Get the dominant axis name of the camera currenlty in use</p>
+
+
+  <div class='pre p1 fill-light mt0'>getCurrentCameraMainAxis(): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
+        'x', 'y', 'z' or 'main' (for perspective)
 
       
     
@@ -5923,6 +6134,84 @@ This class is mostly for being inherited from.</p>
     </div>
   
 </div>
+
+  
+
+  
+</section>
+
+          
+        
+          
+            <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='getkeyfromvalue'>
+      getKeyFromValue
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>Gives the property name in the object that has the given value</p>
+
+
+  <div class='pre p1 fill-light mt0'>getKeyFromValue(object: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>, value: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>object</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
+	    an object that may contain a property associated with a specific value
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>value</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</code>
+	    a value to look for
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
+        Name of the first property that has the given value. Or null if not found
+
+      
+    
+  
+
+  
+
+  
+
+  
 
   
 

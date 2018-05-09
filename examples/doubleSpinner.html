@@ -1,0 +1,127 @@
+<html>
+<head>
+  <title>Double</title>
+
+  <style>
+  html, body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    color: white;
+  }
+
+  a {
+    text-decoration: none;
+    color: #FF91D7;
+  }
+
+  #renderCanvas {
+    width: 100%;
+    height: 100%;
+    /*touch-action: none;*/
+  }
+
+  #spinner {
+    pointer-events: none;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: #ffffff;
+    border-radius: 50%;
+    padding: 15px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    top: 0;
+    -webkit-box-shadow: 0px 0px 43px 0px rgba(0,0,0,0.19);
+    -moz-box-shadow: 0px 0px 43px 0px rgba(0,0,0,0.19);
+    box-shadow: 0px 0px 43px 0px rgba(0,0,0,0.19);
+  }
+
+
+  </style>
+
+</head>
+<body>
+  <!-- importing the automatically build module -->
+  <script src="../dist/quickvoxelcore.es6.js"></script>
+  <img id="spinner" src="images/lego_spinner.gif"/>
+  <canvas id="renderCanvas" touch-action="none"></canvas>
+
+  <script>
+
+  // test compatibility with WebGL2
+  if (!quickvoxelcore.webGL2()){
+    alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+  } else {
+    main()
+  }
+
+    function main () {
+      let canvas = document.getElementById("renderCanvas")
+      let spinner = document.getElementById('spinner')
+      let counterVolumesToBeLoaded = 0
+
+      function hideSpinner () {
+        counterVolumesToBeLoaded --
+        if (counterVolumesToBeLoaded === 0)
+          spinner.style.display = 'none'
+      }
+
+      // the QuickvoxelCore instance is the entry point
+      let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+      // for future access to the volume collection
+      let volumeCollection = qvc.getVolumeCollection();
+      // for future access the render engine
+      let renderEngine = qvc.getRenderEngine();
+
+      // color and constrast settings
+      renderEngine.setColormapSlotN(1, 'jet')
+      renderEngine.setBlendMethod("multiply")
+      renderEngine.setBrightnessSlotN(1, 0.15)
+      renderEngine.setBrightnessSlotN(0, 0.25)
+      renderEngine.setContrastSlotN(0, 1.2)
+
+      volumeCollection.on("startAddingVolume", function(volume){
+        counterVolumesToBeLoaded ++
+        // showing the loading spinner
+        spinner.style.display = 'initial'
+      })
+
+      // here, we have 2 volumes to mount. We could use .mountVolumeOnFirstEmptySlot() but we want to
+      // control which volume is mounted on which slot of the rendering engine, so we do it manually:
+      // the structural MRI volume on the slot 0
+      // the functional MRI volume on the slot 1
+      // This way, we can decide on which to apply the colormap
+      volumeCollection.on("volumeReady", function(volume){
+        hideSpinner()
+
+        if( volume.getId() === structural ){
+          renderEngine.mountVolumeN( 0, volume )
+        }else{
+          renderEngine.mountVolumeN( 1, volume )
+        }
+      })
+
+      volumeCollection.on("errorAddingVolume", function(){
+        hideSpinner()
+      })
+
+
+      let dataFolder = "../data/"
+      let structural = "structural.nii.gz"
+      let functional = "functional.nii.gz"
+      volumeCollection.addVolumeFromUrl( dataFolder + structural )
+      volumeCollection.addVolumeFromUrl( dataFolder + functional )
+    }
+
+
+
+  </script>
+
+</body>
+</html>

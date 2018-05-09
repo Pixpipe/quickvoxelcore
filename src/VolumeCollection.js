@@ -20,10 +20,11 @@ import { EventManager } from './EventManager.js'
  * and added to the collection with a given index.
  *
  * VolumeCollection provides some events, so that actions can be triggered during the lifecycle of a `Volume`:
+ *   - `startAddingVolume` is called when a new volume is about to be added. This event is convenient mostly for UI purpose so that we can for example show a loading spinner, that then will be hidden when the event `volumeAdded` or `errorAddingVolume` are called
  *   - `volumeAdded` is called when the volume is parsed and added to the collection. But its webGL texture is not ready yet! The callbacks attached to this event will have the volume object as argument.
  *   - `volumeReady`called after `volumeAdded`, at the moment the added volume has its WegGL 3D texture ready. At this stage, a volume is ready to be displayed.The callbacks attached to this event will have the volume object as argument.
  *   - `volumeRemoved` is called when a volume is removed from the collection with the method `.removeVolume(id)`. The callbacks attached to this event will have the volume id (string) as argument.
- *   - `errorAddingVolume` is called when a volume failled to be added with `.addVolumeFromUrl()` and `.addVolumeFromFile()`. The callbacks attached to this event will have the url or the HTML5 File object as argument.
+ *   - `errorAddingVolume` is called when a volume failled to be added with `.addVolumeFromUrl()` and `.addVolumeFromFile()`. The callbacks attached to this event will have the url or the filename (if opened from file dialog) as argument.
  *
  * To each event can be attached multiple callbacks, they will simply be called successivelly in the order the were declared. To assiciate a callback function to an event, just do:
  * ```
@@ -104,28 +105,29 @@ class VolumeCollection extends EventManager {
    * @param {String} url - url of the file
    */
   addVolumeFromUrl (url) {
-    let that = this;
-    let urlArrBuff =  new UrlToArrayBufferReader();
+    let that = this
+    let urlArrBuff =  new UrlToArrayBufferReader()
 
-    urlArrBuff.addInput( url, 0 );
+    urlArrBuff.addInput( url, 0 )
 
     urlArrBuff.on("ready", function(){
-      let arrBuff = this.getOutput();
+      let arrBuff = this.getOutput()
       let generic3DDecoder = new Image3DGenericDecoderAlt();
       generic3DDecoder.addInput( arrBuff )
       generic3DDecoder.update()
       let img3D = generic3DDecoder.getOutput()
 
       if( img3D ){
-        console.log( img3D );
-        let id = that._generateID( urlArrBuff.getMetadata("filenames")[0] );
-        let volume = new Volume( id, img3D );
+        console.log( img3D )
+        let id = that._generateID( urlArrBuff.getMetadata("filenames")[0] )
+        let volume = new Volume( id, img3D )
         that._addToCollection( volume )
       }else{
-        that.emit( 'errorAddingVolume', [url] );
+        that.emit( 'errorAddingVolume', [url] )
       }
     });
 
+    that.emit( 'startAddingVolume', [url] )
     urlArrBuff.update()
   }
 
@@ -140,22 +142,23 @@ class VolumeCollection extends EventManager {
     let filename = file.name
 
     file2Buff.on("ready", function(){
-      let arrBuff = this.getOutput();
+      let arrBuff = this.getOutput()
       let generic3DDecoder = new Image3DGenericDecoderAlt()
       generic3DDecoder.addInput( arrBuff )
       generic3DDecoder.update()
       let img3D = generic3DDecoder.getOutput()
 
       if( img3D ){
-        console.log( img3D );
+        console.log( img3D )
         let id = that._generateID( filename )
         let volume = new Volume( id, img3D )
         that._addToCollection( volume )
       }else{
-        that.emit( 'errorAddingVolume', file)
+        that.emit( 'errorAddingVolume', [filename])
       }
     });
 
+    that.emit( 'startAddingVolume', [filename] )
     file2Buff.addInput(file)
     file2Buff.update()
   }
