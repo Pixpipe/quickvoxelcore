@@ -1,54 +1,24 @@
 <html>
 <head>
-  <title>Double</title>
-
-  <style>
-  html, body {
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    color: white;
-  }
-
-  a {
-    text-decoration: none;
-    color: #FF91D7;
-  }
-
-  #renderCanvas {
-    width: 100%;
-    height: 100%;
-    /*touch-action: none;*/
-  }
-
-  #spinner {
-    pointer-events: none;
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    background: #ffffff;
-    border-radius: 50%;
-    padding: 15px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    top: 0;
-    -webkit-box-shadow: 0px 0px 43px 0px rgba(0,0,0,0.19);
-    -moz-box-shadow: 0px 0px 43px 0px rgba(0,0,0,0.19);
-    box-shadow: 0px 0px 43px 0px rgba(0,0,0,0.19);
-  }
-
-
-  </style>
-
+  <title>Double Spinner</title>
+  <link rel='stylesheet' href='css/main.css'/>
 </head>
 <body>
-  <!-- importing the automatically build module -->
+  <div id="header">
+    <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
+    <div class="description">
+      When loading more more than one volume, a spinner is an easy way to tell your user that something is currently happening
+      &bull;
+      <a id="sourcelink" href="">source</a>
+    </div>
+  </div>
+
+  <!-- This one is not related to Quickvoxel, just to auto update the link to the Github source -->
+  <script src="js/addsourcelink.js"></script>
+
+  <!-- Loading Quickvoxel Core -->
   <script src="../dist/quickvoxelcore.es6.js"></script>
+
   <img id="spinner" src="images/lego_spinner.gif"/>
   <canvas id="renderCanvas" touch-action="none"></canvas>
 

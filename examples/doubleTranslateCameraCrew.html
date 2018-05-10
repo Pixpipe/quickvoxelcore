@@ -1,47 +1,24 @@
 <html>
 <head>
   <title>Double Translate Camera Crew</title>
-
-  <style>
-  html, body {
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: monospace;
-    color: white;
-  }
-
-  a {
-    text-decoration: none;
-    color: #FF91D7;
-  }
-
-  #renderCanvas {
-    width: 100%;
-    height: 100%;
-    /*touch-action: none;*/
-  }
-
-  #info {
-    position: fixed;
-    width: 100vw;
-    height: 10vh;
-    background: rgba(0, 0, 0, 0.25);
-    bottom: 0;
-    font-size: 2em;
-    text-align: center;
-    line-height: 10vh;
-  }
-
-
-  </style>
-
+  <link rel='stylesheet' href='css/main.css'/>
 </head>
 <body>
-  <!-- importing the automatically build module -->
+  <div id="header">
+    <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
+    <div class="description">
+      Thanks to the <code>CameraCrew</code> object and the method <code>.defineCamera()</code>, we can change the camera, from perspective (called 'main') to orthogonal (called 'sagittal', 'axial' and 'coronal')
+      &bull;
+      <a id="sourcelink" href="">source</a>
+    </div>
+  </div>
+
+  <!-- This one is not related to Quickvoxel, just to auto update the link to the Github source -->
+  <script src="js/addsourcelink.js"></script>
+
+  <!-- Loading Quickvoxel Core -->
   <script src="../dist/quickvoxelcore.es6.js"></script>
+
   <div id="info"></div>
   <canvas id="renderCanvas" touch-action="none"></canvas>
 

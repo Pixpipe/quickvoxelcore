@@ -1,35 +1,24 @@
 <html>
 <head>
   <title>Double</title>
-
-  <style>
-  html, body {
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    color: white;
-  }
-
-  a {
-    text-decoration: none;
-    color: #FF91D7;
-  }
-
-  #renderCanvas {
-    width: 100%;
-    height: 100%;
-    /*touch-action: none;*/
-  }
-
-
-  </style>
-
+  <link rel='stylesheet' href='css/main.css'/>
 </head>
 <body>
-  <!-- importing the automatically build module -->
+  <div id="header">
+    <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
+    <div class="description">
+      When loading two volumes registered in the same space, they will align thanks to the use of their affine transformation, even though they don't have the same size, resolution of internal alignment.<br />
+      Then, it becomes interesting to use Quickvoxel features such as colormap, blending, brightness and contrast. Each of these feature apply independantly to each volume.
+      &bull;
+      <a id="sourcelink" href="">source</a>
+    </div>
+  </div>
+
+
+  <!-- This one is not related to Quickvoxel, just to auto update the link to the Github source -->
+  <script src="js/addsourcelink.js"></script>
+
+  <!-- Loading Quickvoxel Core -->
   <script src="../dist/quickvoxelcore.es6.js"></script>
 
   <canvas id="renderCanvas" touch-action="none"></canvas>

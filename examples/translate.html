@@ -1,31 +1,23 @@
 <html>
 <head>
   <title>Translate</title>
-
-  <style>
-  body {
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-  }
-
-  a {
-    text-decoration: none;
-    color: #FF91D7;
-  }
-
-  #renderCanvas {
-    width: 100%;
-    height: 100%;
-  }
-
-
-  </style>
+  <link rel='stylesheet' href='css/main.css'/>
 
 </head>
 <body>
-  <!-- importing the automatically build module -->
+  <div id="header">
+    <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
+    <div class="description">
+      This example shows we can programatically change the position of the orthogonal planes. As we can  see, the coronal plane was shifted above the origin
+      &bull;
+      <a id="sourcelink" href="">source</a>
+    </div>
+  </div>
+
+  <!-- This one is not related to Quickvoxel, just to auto update the link to the Github source -->
+  <script src="js/addsourcelink.js"></script>
+
+  <!-- Loading Quickvoxel Core -->
   <script src="../dist/quickvoxelcore.es6.js"></script>
 
   <canvas id="renderCanvas"></canvas>
