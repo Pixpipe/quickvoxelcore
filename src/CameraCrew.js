@@ -194,7 +194,7 @@ class CameraCrew extends EventManager {
     let mainCam = new BJSArcRotateCamera(this._perspectiveCamName, Math.PI / 2, Math.PI / 2, 2, BJSVector3.Zero(), this._scene)
     mainCam.inertia = 0.7;
     mainCam.setPosition( new BJSVector3(300, 300, 300) )
-    mainCam.attachControl( this._canvas, false, false )
+    mainCam.attachControl( this._canvas, true, false )
     mainCam.upperBetaLimit = null
     mainCam.lowerBetaLimit = null
     mainCam.panningSensibility﻿ = 30;

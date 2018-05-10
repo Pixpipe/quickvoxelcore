@@ -1,0 +1,231 @@
+<html>
+<head>
+  <title>Choose Camera</title>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css" integrity="sha384-G0fIWCsCzJIMAVNQPfjH08cyYaUtMwjJwqiRKxxE/rx96Uroj1BtIQ6MLJuheaO9" crossorigin="anonymous">
+  <link rel='stylesheet' href='css/main.css'/>
+  <style>
+  .smaller-text {
+    font-size: 0.7em;
+  }
+  .azure {
+    background-color: #4de2c1;
+  }
+
+  .purple {
+    background-color: #cd92f9;
+  }
+
+  .azure-text {
+    color: #4de2c1;
+  }
+
+  .purple-text {
+    color: #cd92f9;
+  }
+
+  .camPicker {
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+    line-height: 7vh;
+    user-select: none;
+    font-size: 2em;
+    color: #FFF;
+  }
+
+  .fas {
+    pointer-events: none;
+  }
+
+  .camPicker:hover {
+    opacity: 0.3;
+  }
+
+  .staticSliderWrapper {
+    position: absolute;
+    bottom: 0;
+    width: 100vw;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 5px;
+    grid-auto-rows: 7vh;
+  }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
+    <div class="description">
+      Choose the camera!
+      &bull;
+      <a id="sourcelink" href="">source</a>
+    </div>
+  </div>
+
+  <!-- This one is not related to Quickvoxel, just to auto update the link to the Github source -->
+  <script src="js/addsourcelink.js"></script>
+
+  <!-- Loading Quickvoxel Core -->
+  <script src="../dist/quickvoxelcore.es6.js"></script>
+
+  <canvas id="renderCanvas"></canvas>
+
+  <div class="staticSliderWrapper">
+    <div id="main" class="camPicker azure"><i class="fas fa-video smaller-text"></i> perspective</div>
+    <div id="axial" class="camPicker azure"><i class="fas fa-video smaller-text"></i> axial</div>
+    <div id="coronal" class="camPicker azure"><i class="fas fa-video smaller-text"></i> coronal</div>
+    <div id="sagittal" class="camPicker azure"><i class="fas fa-video smaller-text"></i> sagittal</div>
+  </div>
+
+  <script>
+
+    // test compatibility with WebGL2
+    if (!quickvoxelcore.webGL2()){
+      alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+    } else {
+      main()
+    }
+
+
+  function main () {
+    let canvas = document.getElementById("renderCanvas")
+    let isMouseDown = false
+    let isShiftDown = false
+
+
+
+    // the QuickvoxelCore instance is the entry point
+    let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+    // for future access to the volume collection
+    let volumeCollection = qvc.getVolumeCollection();
+    // for future access the render engine
+    let renderEngine = qvc.getRenderEngine();
+
+    // To modify camera settings
+    let camcrew = qvc.getCameraCrew()
+
+    volumeCollection.addVolumeFromUrl( "../data/structural.nii.gz" );
+
+    // mount the volume when it's ready!
+    volumeCollection.on("volumeReady", function(volume){
+      let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+      if( !couldMount ){
+        console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+      }
+    })
+
+    // event for selecting the camera
+    let camPickerButtons = document.querySelectorAll('.camPicker')
+    camPickerButtons.forEach(function(camBt){
+      camBt.addEventListener('mousedown', function(e){
+        //console.log(e);
+        // for convenience, the id of the button is the same as the names expected by the method camcrew.defineCamera()
+        let camId = e.target.id
+        camcrew.defineCamera( camId )
+      })
+    })
+
+    // event for clisking and dragging on the canvas
+    canvas.addEventListener('pointerdown', function(e){
+      isMouseDown = true
+    })
+
+    canvas.addEventListener('pointerup', function(e){
+      isMouseDown = false
+    })
+
+    canvas.addEventListener('pointermove', function(e){
+      // if the mouse is pressed AND we are currently using one of the 3 ortho camera, then we move!
+      if (isMouseDown && camcrew.isUsingOrthoCam()) {
+        if (isShiftDown) {
+          rotation(e)
+        } else {
+          translation(e)
+        }
+
+      }
+    })
+
+    // scrolling for zooming, but only on the ortho cam because the perpective
+    // already has native zooming capapilities
+    canvas.addEventListener('mousewheel', function(e){
+      if (camcrew.isUsingOrthoCam()) {
+        let ratio = 1 + Math.abs(e.deltaY)/500
+        let zoomRatio = e.deltaY < 0 ? ratio : 1/ratio
+        camcrew.zoomCamSpan ('current', zoomRatio)
+      }
+    })
+
+    // to record SHIFT pressing
+    window.addEventListener('keydown', function(e){
+      if (e.code.toLowerCase().indexOf('shift') !== -1){
+        isShiftDown = true
+      }
+    })
+
+    // to record SHIFT releasing
+    window.addEventListener('keyup', function(e){
+      if (e.code.toLowerCase().indexOf('shift') !== -1){
+        isShiftDown = false
+      }
+    })
+
+    function rotation (e) {
+      // works because the canvas takes all the window
+      let center = {
+        x: canvas.width/2,
+        y: canvas.height/2
+      }
+
+      let positionBefore = {
+        x: e.x - e.movementX,
+        y: e.y - e.movementY
+      }
+
+      let positionAfter = {
+        x: e.x,
+        y: e.y
+      }
+
+      let a = {
+        x: center.x - positionBefore.x,
+        y: center.y - positionBefore.y
+      }
+
+      let b = {
+        x: center.x - positionAfter.x,
+        y: center.y - positionAfter.y
+      }
+
+      let angleRad = angleBetweenVectors(a.x, a.y, b.x, b.y)
+      camcrew.rotateOrthoCam('current', angleRad)
+    }
+
+    function translation (e) {
+      let camSpan = camcrew.getOthoCamSpan('current') // the span returned is only horizontal
+      let ratioX = 2 * camSpan / canvas.width
+      let ratioY = (2 * camSpan / canvas.height) * (canvas.height/canvas.width) // we multiply by the ratio because the span given is only horizontal
+      camcrew.translateOrthoCam('current', -e.movementX*ratioX, e.movementY*ratioY)
+    }
+
+
+    function angleBetweenVectors (Ax, Ay, Bx, By) {
+      let magA = Math.sqrt( Ax * Ax + Ay * Ay );
+      let magB = Math.sqrt( Bx * Bx + By * By );
+      let magAmagB = magA * magB;
+
+      if( magA * magB == 0 )
+        return null
+
+      let sinTheta = (Ax * By - Bx * Ay) / magAmagB;
+      let cosTheta = (Ax * Bx + Ay * By) / magAmagB;
+      let theta = Math.atan2( sinTheta, cosTheta );
+      return theta;
+    }
+
+  }
+
+  </script>
+
+</body>
+</html>
