@@ -538,6 +538,8 @@ class CameraCrew extends EventManager {
 
   /**
    * Moves the given camera relatively to its curent position.
+   * If the `right` and `up` come from screen coordinates, it is most likely that
+   * the alternative method `.translateOrthoCamScreenAlign()` is the one to use.
    * @param  {String} camName - name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
    * @param  {Number} right - moves to the right when positive, moves the the left when negative
    * @param  {Number} up - moves up when positive, moves down when negative
@@ -571,6 +573,52 @@ class CameraCrew extends EventManager {
     if (camName === 'cOrtho') {
       this._cameras[camName].position.y += up
       this._cameras[camName].position.x -= right
+    }
+  }
+
+
+  /**
+   * Moves the given camera relatively to its curent position when using screen coordinates.
+   * Contrary to `.translateOrthoCam()`, this method takes in account the rotation of the camera (if any).
+   * This method is most likely the one to use when the `right` and `up` (aka. dx and dy)
+   * come from screen coordinates such as mouse/pointer.
+   * @param  {String} camName - name of the camera ('aOrtho', 'bOrtho', 'cOrtho')
+   * @param  {Number} right - moves to the right when positive, moves the the left when negative
+   * @param  {Number} up - moves up when positive, moves down when negative
+   */
+  translateOrthoCamScreenAlign (camName, right, up) {
+    camName = this._getCameraNameByName(camName)
+    if (!camName)
+      return
+
+    if (this._isPerspectiveCam(camName)) {
+      console.warn('This feature is not available for the perspective camera.')
+      return
+    }
+
+    // up = +z
+    // right = +y
+    if (camName === 'aOrtho') {
+      let theta = this._cameras[camName].rotation.z
+      this._cameras[camName].position.z += ( up*Math.sin(theta) - right*Math.cos(theta) )
+      this._cameras[camName].position.y += ( up*Math.cos(theta) + right*Math.sin(theta) )
+
+    }
+
+    // up = +z
+    // right = +x (but -x in webgl)
+    if (camName === 'bOrtho') {
+      let theta = this._cameras[camName].rotation.y
+      this._cameras[camName].position.z -= ( up*Math.cos(theta) + right*Math.sin(theta) )
+      this._cameras[camName].position.x -= ( up*Math.sin(theta) - right*Math.cos(theta) )
+    }
+
+    // up = +y
+    // right = +x (but -x in webgl)
+    if (camName === 'cOrtho') {
+      let theta = this._cameras[camName].rotation.z
+      this._cameras[camName].position.y += ( up*Math.cos(theta) + right*Math.sin(theta) )
+      this._cameras[camName].position.x += ( up*Math.sin(theta) - right*Math.cos(theta) )
     }
   }
 

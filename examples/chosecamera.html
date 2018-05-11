@@ -56,7 +56,7 @@
   <div id="header">
     <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
     <div class="description">
-      Choose the camera!
+      Choose the camera! For the orthographic cameras (aka. non-perspective ), you can pan the image by dragging and rotate with SHIFT + dragging.
       &bull;
       <a id="sourcelink" href="">source</a>
     </div>
@@ -71,7 +71,7 @@
   <canvas id="renderCanvas"></canvas>
 
   <div class="staticSliderWrapper">
-    <div id="main" class="camPicker azure"><i class="fas fa-video smaller-text"></i> perspective</div>
+    <div id="main" class="camPicker purple"><i class="fas fa-video smaller-text"></i> perspective</div>
     <div id="axial" class="camPicker azure"><i class="fas fa-video smaller-text"></i> axial</div>
     <div id="coronal" class="camPicker azure"><i class="fas fa-video smaller-text"></i> coronal</div>
     <div id="sagittal" class="camPicker azure"><i class="fas fa-video smaller-text"></i> sagittal</div>
@@ -170,6 +170,7 @@
       }
     })
 
+    // perform the rotation of the image on the ortho cam
     function rotation (e) {
       // works because the canvas takes all the window
       let center = {
@@ -197,19 +198,30 @@
         y: center.y - positionAfter.y
       }
 
-      let angleRad = angleBetweenVectors(a.x, a.y, b.x, b.y)
+      let angleRad = angleBetweenVectors(a, b)
       camcrew.rotateOrthoCam('current', angleRad)
     }
 
+    // perform the translation of the image on the ortho cam
     function translation (e) {
       let camSpan = camcrew.getOthoCamSpan('current') // the span returned is only horizontal
       let ratioX = 2 * camSpan / canvas.width
       let ratioY = (2 * camSpan / canvas.height) * (canvas.height/canvas.width) // we multiply by the ratio because the span given is only horizontal
-      camcrew.translateOrthoCam('current', -e.movementX*ratioX, e.movementY*ratioY)
+      camcrew.translateOrthoCamScreenAlign('current', -e.movementX*ratioX, e.movementY*ratioY)
     }
 
 
-    function angleBetweenVectors (Ax, Ay, Bx, By) {
+    /**
+     * Given two vectors, computes the signed angle
+     * @param  {Object} a - vector {x: Number, y: Number}
+     * @param  {Object} b - vector {x: Number, y: Number}
+     * @return {Number} signed angle in radian
+     */
+    function angleBetweenVectors (a, b) {
+      let Ax = a.x
+      let Bx = b.x
+      let Ay = a.y
+      let By = b.y
       let magA = Math.sqrt( Ax * Ax + Ay * Ay );
       let magB = Math.sqrt( Bx * Bx + By * By );
       let magAmagB = magA * magB;
