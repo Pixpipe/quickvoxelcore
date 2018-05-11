@@ -32,8 +32,8 @@ A lot of additional methods to do more interesting things with *Quickvoxel* are 
 - [+ time series animated](http://www.pixpipe.io/quickvoxelcore/examples/time.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html)
 - [+ animated translation](http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html)
 - [+ animated oblique](http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html)
-- [Changing cameras](http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslateCameraCrew.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslateCameraCrew.html)
-
+- [Changing cameras automatically (simple)](http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslateCameraCrew.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslateCameraCrew.html)
+- [Changing cameras and having view control](http://www.pixpipe.io/quickvoxelcore/examples/chosecamera.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/chosecamera.html)
 
 In addition [QuickGui](http://me.jonathanlurie.fr/quickgui/public/) ([source](https://github.com/jonathanlurie/quickgui)) is a more advanced project, developed for the ***#BrainHack2018*** in Montreal. It uses some features of Quickvoxel Core with a simple and accessible UI.
 
@@ -114,7 +114,10 @@ let canvas = document.getElementById("renderCanvas")
 let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
 ```
 
-The constructor `quickvoxelcore.QuickvoxelCore(...)` initializes several internal objects, two important ones can be fetched: the `VolumeCollection` and the `RenderEngine`:
+The constructor `quickvoxelcore.QuickvoxelCore(...)` initializes several internal objects, three important ones can then be fetched:
+- the `VolumeCollection`
+- the `RenderEngine`
+- the `CameraCrew`
 
 ```javascript
 // ...
@@ -123,6 +126,7 @@ let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
 
 let volumeCollection = qvc.getVolumeCollection()
 let renderEngine = qvc.getRenderEngine()
+let camcrew = qvc.getCameraCrew()
 ```
 
 Though, before launching your main app, if can be nice to check if QuickvoxelCore is running in a WebGL2 compatible environment. We have a function for that:
@@ -160,6 +164,8 @@ myVolumeCollection.on("volumeReady", function(volume){
 ```
 In general, events are most likely to be defined from the main scope or from where you also have access to the `RenderEngine` instance.
 
+VolumeCollection has plenty of methods, get the full description [here](http://www.pixpipe.io/quickvoxelcore/doc/#volumecollection). You may also want to check the documentation of the Volume class [here](http://www.pixpipe.io/quickvoxelcore/doc/#volume).
+
 ## Interlude: the RenderEngine
 The `RenderEngine` instance is in charge of displaying the volume from the collection, once they are loaded. It also comes with all the features to rotates/translates the three orthogonal planes (referred as `_planeSystem` in the source), apply a colormaps, change brightness/contrast and deal with blending.
 
@@ -169,8 +175,43 @@ A `RenderEngine` can display only 2 volumes at the same time. The terminology us
 Then, some volume can be *unmounted* from a given slot and another volume from the volume collection can be *mounted*.
 
 Rendering features such as **colormap**, **contrast** and **brightness** are associated to *slots* and not to *volumes*. This means, if you use the *primary* slot to mount a structural MRI and the *secondary* slot to mount a functional MRI, and then adjust the brightness/contrast/colormap of the secondary slot, mounting another fMRI instead of the one in place will not change those settings.
-
 *Note: there are plans to add a additional volume for masking*
+
+RenderEngine has plenty of other methods, get the full description [here](http://www.pixpipe.io/quickvoxelcore/doc/#renderengine)
+
+## Interlude: The CameraCrew
+The `CameraCrew` instance is automatically created at the instanciation of the `QuickvoxelCore` object. The purpose of the *cameracrew* is to provide an interface for camera and point of view manipulation.  
+The default camera in QuickvoxelCore is the **perspective** camera, but three additional orthographic cameras are provided:
+- one always facing the **coronal** plane
+- one always facing the **sagittal** plane
+- one always facing the **axial** plane
+
+When the orthogonal planes are rotated, the orthographic cameras associated are also rotated to be always facing their respective plane.
+Each orthogonal camera can independently be zoomed in/out, translated and rotated.
+
+To change the camera, the method `.defineCamera()` from the `CameraCrew` instance must be called. Though, multiple camera naming are possible:
+- after **generic names**: `'aOrtho'`, `'bOrtho'` and `'cOrtho'`. Those names where made generic because they don't imply a specific direction, even though before any rotation happen, *aOrtho* looks toward *x*, *bOrtho* looks towards *y* and *cOrtho* looks toward *z*.
+- after **generic short names**: `'a'`, `'b'` and `'c'`, same logic as above
+- after their **dominant axis names**: `'x'`, `'y'` and `'z'`. This method is convenient because the names are dynamically associated with camera *a*, *b* and *c* depending on the dominant direction they are looking at and this association is reevaluated at every ortho plane rotation. For example, at first and before any plane rotation is performed, the *x* camera **is** the *a* camera. After some rotations, the *a* camera is probably no longer looking towards the *x* direction, then if we need the camera that looks toward *x*, we can no longer select the *a* camera for that. This is why this *axis naming* is important.
+- after the **anatomical names**, this is the same as *dominant axis names* but using a semantic neuroscientist are more used to: `'sagittal'` (always toward *x*), `'coronal'` (always toward *y*) and `'axial'` (always towards *z*). Note that this relation between the anatomical names and the axis names is established by the MNI space conventions.
+
+In addition to those names, two other are possible:
+- `'main'` is the perspective camera
+- `'current'` is the current camera being used
+
+Of course the *current* keyword is not useful in the context of `.defineCamera()` but it is very handy when it comes to modifying the setting of a camera, i.e. no need to remember if we are changing the *zoom* setting of this or that camera, we are changing it on *current*.
+
+Here is an example of how to change the camera:
+```javascript
+// ...
+let qvc = new quickvoxelcore.QuickvoxelCore( canvas )
+let camcrew = qvc.getCameraCrew()
+
+camcrew.defineCamera('coronal')
+// ...
+```
+CameraCrew has plenty of other methods, get the full description [here](http://www.pixpipe.io/quickvoxelcore/doc/#cameracrew).
+
 
 ## Mount a volume once it's ready
 Here is how to load a volume from a URL (that has to comply with CORS, i.e. be in the same server as Quickvoxel)

@@ -297,6 +297,7 @@ class CameraCrew extends EventManager {
 
 
   /**
+   * @private
    * Get the dominant axis name from the native camera name
    * @param  {String}  camName - native camera name, such as 'aOtho', 'bOrtho' or 'cOrtho'
    * @return {String} dominant axis name of the camera target vector, such as 'x', 'y' or 'z'

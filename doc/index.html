@@ -496,12 +496,6 @@
                       <li class='h5'><span>Instance members</span></li>
                       
                       <li><a
-                        href='#cameracrew_getcameraaxisnamefromnativename'
-                        class='regular pre-open'>
-                        _getCameraAxisNameFromNativeName
-                      </a></li>
-                      
-                      <li><a
                         href='#cameracrewangleorthocam'
                         class='regular pre-open'>
                         angleOrthoCam
@@ -711,7 +705,8 @@ A lot of additional methods to do more interesting things with <em>Quickvoxel</e
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/time.html">+ time series animated</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/time.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslate.html">+ animated translation</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslate.html">source</a></li>
 <li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleRotate.html">+ animated oblique</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleRotate.html">source</a></li>
-<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslateCameraCrew.html">Changing cameras</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslateCameraCrew.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/doubleTranslateCameraCrew.html">Changing cameras automatically (simple)</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/doubleTranslateCameraCrew.html">source</a></li>
+<li><a href="http://www.pixpipe.io/quickvoxelcore/examples/chosecamera.html">Changing cameras and having view control</a> - <a href="https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/chosecamera.html">source</a></li>
 </ul>
 <p>In addition <a href="http://me.jonathanlurie.fr/quickgui/public/">QuickGui</a> (<a href="https://github.com/jonathanlurie/quickgui">source</a>) is a more advanced project, developed for the <strong><em>#BrainHack2018</em></strong> in Montreal. It uses some features of Quickvoxel Core with a simple and accessible UI.</p>
 <h1>API documentation</h1>
@@ -773,13 +768,19 @@ A lot of additional methods to do more interesting things with <em>Quickvoxel</e
 <pre class='hljs'><span class="hljs-keyword">let</span> canvas = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"renderCanvas"</span>)
 
 <span class="hljs-keyword">let</span> qvc = <span class="hljs-keyword">new</span> quickvoxelcore.QuickvoxelCore( canvas )</pre>
-<p>The constructor <code>quickvoxelcore.QuickvoxelCore(...)</code> initializes several internal objects, two important ones can be fetched: the <code>VolumeCollection</code> and the <code>RenderEngine</code>:</p>
+<p>The constructor <code>quickvoxelcore.QuickvoxelCore(...)</code> initializes several internal objects, three important ones can then be fetched:</p>
+<ul>
+<li>the <code>VolumeCollection</code></li>
+<li>the <code>RenderEngine</code></li>
+<li>the <code>CameraCrew</code></li>
+</ul>
 <pre class='hljs'><span class="hljs-comment">// ...</span>
 
 <span class="hljs-keyword">let</span> qvc = <span class="hljs-keyword">new</span> quickvoxelcore.QuickvoxelCore( canvas )
 
 <span class="hljs-keyword">let</span> volumeCollection = qvc.getVolumeCollection()
-<span class="hljs-keyword">let</span> renderEngine = qvc.getRenderEngine()</pre>
+<span class="hljs-keyword">let</span> renderEngine = qvc.getRenderEngine()
+<span class="hljs-keyword">let</span> camcrew = qvc.getCameraCrew()</pre>
 <p>Though, before launching your main app, if can be nice to check if QuickvoxelCore is running in a WebGL2 compatible environment. We have a function for that:</p>
 <pre class='hljs'><span class="hljs-comment">// test compatibility with WebGL2</span>
 <span class="hljs-keyword">if</span> (!quickvoxelcore.webGL2()){
@@ -811,6 +812,7 @@ A lot of additional methods to do more interesting things with <em>Quickvoxel</e
     <span class="hljs-comment">// Do something with this volume</span>
 })</pre>
 <p>In general, events are most likely to be defined from the main scope or from where you also have access to the <code>RenderEngine</code> instance.</p>
+<p>VolumeCollection has plenty of methods, get the full description <a href="http://www.pixpipe.io/quickvoxelcore/doc/#volumecollection">here</a>. You may also want to check the documentation of the Volume class <a href="http://www.pixpipe.io/quickvoxelcore/doc/#volume">here</a>.</p>
 <h2>Interlude: the RenderEngine</h2>
 <p>The <code>RenderEngine</code> instance is in charge of displaying the volume from the collection, once they are loaded. It also comes with all the features to rotates/translates the three orthogonal planes (referred as <code>_planeSystem</code> in the source), apply a colormaps, change brightness/contrast and deal with blending.</p>
 <p>A <code>RenderEngine</code> can display only 2 volumes at the same time. The terminology used in the doc and source is</p>
@@ -818,8 +820,40 @@ A lot of additional methods to do more interesting things with <em>Quickvoxel</e
 <p>Two <strong>slots</strong> are available to <strong>mount</strong> volumes on the render engine. Those slots are called <strong>primary</strong> and <strong>secondary</strong>.</p>
 </blockquote>
 <p>Then, some volume can be <em>unmounted</em> from a given slot and another volume from the volume collection can be <em>mounted</em>.</p>
-<p>Rendering features such as <strong>colormap</strong>, <strong>contrast</strong> and <strong>brightness</strong> are associated to <em>slots</em> and not to <em>volumes</em>. This means, if you use the <em>primary</em> slot to mount a structural MRI and the <em>secondary</em> slot to mount a functional MRI, and then adjust the brightness/contrast/colormap of the secondary slot, mounting another fMRI instead of the one in place will not change those settings.</p>
-<p><em>Note: there are plans to add a additional volume for masking</em></p>
+<p>Rendering features such as <strong>colormap</strong>, <strong>contrast</strong> and <strong>brightness</strong> are associated to <em>slots</em> and not to <em>volumes</em>. This means, if you use the <em>primary</em> slot to mount a structural MRI and the <em>secondary</em> slot to mount a functional MRI, and then adjust the brightness/contrast/colormap of the secondary slot, mounting another fMRI instead of the one in place will not change those settings.
+<em>Note: there are plans to add a additional volume for masking</em></p>
+<p>RenderEngine has plenty of other methods, get the full description <a href="http://www.pixpipe.io/quickvoxelcore/doc/#renderengine">here</a></p>
+<h2>Interlude: The CameraCrew</h2>
+<p>The <code>CameraCrew</code> instance is automatically created at the instanciation of the <code>QuickvoxelCore</code> object. The purpose of the <em>cameracrew</em> is to provide an interface for camera and point of view manipulation.<br>
+The default camera in QuickvoxelCore is the <strong>perspective</strong> camera, but three additional orthographic cameras are provided:</p>
+<ul>
+<li>one always facing the <strong>coronal</strong> plane</li>
+<li>one always facing the <strong>sagittal</strong> plane</li>
+<li>one always facing the <strong>axial</strong> plane</li>
+</ul>
+<p>When the orthogonal planes are rotated, the orthographic cameras associated are also rotated to be always facing their respective plane.
+Each orthogonal camera can independently be zoomed in/out, translated and rotated.</p>
+<p>To change the camera, the method <code>.defineCamera()</code> from the <code>CameraCrew</code> instance must be called. Though, multiple camera naming are possible:</p>
+<ul>
+<li>after <strong>generic names</strong>: <code>'aOrtho'</code>, <code>'bOrtho'</code> and <code>'cOrtho'</code>. Those names where made generic because they don't imply a specific direction, even though before any rotation happen, <em>aOrtho</em> looks toward <em>x</em>, <em>bOrtho</em> looks towards <em>y</em> and <em>cOrtho</em> looks toward <em>z</em>.</li>
+<li>after <strong>generic short names</strong>: <code>'a'</code>, <code>'b'</code> and <code>'c'</code>, same logic as above</li>
+<li>after their <strong>dominant axis names</strong>: <code>'x'</code>, <code>'y'</code> and <code>'z'</code>. This method is convenient because the names are dynamically associated with camera <em>a</em>, <em>b</em> and <em>c</em> depending on the dominant direction they are looking at and this association is reevaluated at every ortho plane rotation. For example, at first and before any plane rotation is performed, the <em>x</em> camera <strong>is</strong> the <em>a</em> camera. After some rotations, the <em>a</em> camera is probably no longer looking towards the <em>x</em> direction, then if we need the camera that looks toward <em>x</em>, we can no longer select the <em>a</em> camera for that. This is why this <em>axis naming</em> is important.</li>
+<li>after the <strong>anatomical names</strong>, this is the same as <em>dominant axis names</em> but using a semantic neuroscientist are more used to: <code>'sagittal'</code> (always toward <em>x</em>), <code>'coronal'</code> (always toward <em>y</em>) and <code>'axial'</code> (always towards <em>z</em>). Note that this relation between the anatomical names and the axis names is established by the MNI space conventions.</li>
+</ul>
+<p>In addition to those names, two other are possible:</p>
+<ul>
+<li><code>'main'</code> is the perspective camera</li>
+<li><code>'current'</code> is the current camera being used</li>
+</ul>
+<p>Of course the <em>current</em> keyword is not useful in the context of <code>.defineCamera()</code> but it is very handy when it comes to modifying the setting of a camera, i.e. no need to remember if we are changing the <em>zoom</em> setting of this or that camera, we are changing it on <em>current</em>.</p>
+<p>Here is an example of how to change the camera:</p>
+<pre class='hljs'><span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">let</span> qvc = <span class="hljs-keyword">new</span> quickvoxelcore.QuickvoxelCore( canvas )
+<span class="hljs-keyword">let</span> camcrew = qvc.getCameraCrew()
+
+camcrew.defineCamera(<span class="hljs-string">'coronal'</span>)
+<span class="hljs-comment">// ...</span></pre>
+<p>CameraCrew has plenty of other methods, get the full description <a href="http://www.pixpipe.io/quickvoxelcore/doc/#cameracrew">here</a>.</p>
 <h2>Mount a volume once it's ready</h2>
 <p>Here is how to load a volume from a URL (that has to comply with CORS, i.e. be in the same server as Quickvoxel)</p>
 <pre class='hljs'><span class="hljs-comment">// ...</span>
@@ -3492,6 +3526,68 @@ Available are:</p>
       <div class="clearfix small pointer toggle-sibling">
         <div class="py1 contain">
             <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>setPosition(position)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Update the position of the center of the _planeSystem in world coordinates.
+Not each position property have to be updated.</p>
+
+
+  <div class='pre p1 fill-light mt0'>setPosition(position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>position</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
+            = <code>{x:undefined,y:undefined,z:undefined}</code>)</code>
+	    The new position
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='renderenginesetposition'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
             <span class='code strong strong truncate'>setPosition(position, cameraId)</span>
         </div>
       </div>
@@ -3532,68 +3628,6 @@ Available are:</p>
           <div>
             <span class='code bold'>cameraId</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
 	    the id of the camera
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
-  
-    <div class='border-bottom' id='renderenginesetposition'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>setPosition(position)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Update the position of the center of the _planeSystem in world coordinates.
-Not each position property have to be updated.</p>
-
-
-  <div class='pre p1 fill-light mt0'>setPosition(position: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>)</div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>position</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>
-            = <code>{x:undefined,y:undefined,z:undefined}</code>)</code>
-	    The new position
 
           </div>
           
@@ -4873,74 +4907,6 @@ then, the name 'current' can also be used to address the camera currenlty being 
   
     <div class='py1 quiet mt1 prose-big'>Instance Members</div>
     <div class="clearfix">
-  
-    <div class='border-bottom' id='cameracrew_getcameraaxisnamefromnativename'>
-      <div class="clearfix small pointer toggle-sibling">
-        <div class="py1 contain">
-            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
-            <span class='code strong strong truncate'>_getCameraAxisNameFromNativeName(camName)</span>
-        </div>
-      </div>
-      <div class="clearfix display-none toggle-target">
-        <section class='p2 mb2 clearfix bg-white minishadow'>
-
-  
-
-  <p>Get the dominant axis name from the native camera name</p>
-
-
-  <div class='pre p1 fill-light mt0'>_getCameraAxisNameFromNativeName(camName: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></div>
-  
-  
-
-  
-  
-  
-  
-  
-  
-
-  
-    <div class='py1 quiet mt1 prose-big'>Parameters</div>
-    <div class='prose'>
-      
-        <div class='space-bottom0'>
-          <div>
-            <span class='code bold'>camName</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>)</code>
-	    native camera name, such as 'aOtho', 'bOrtho' or 'cOrtho'
-
-          </div>
-          
-        </div>
-      
-    </div>
-  
-
-  
-
-  
-    
-      <div class='py1 quiet mt1 prose-big'>Returns</div>
-      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">String</a></code>:
-        dominant axis name of the camera target vector, such as 'x', 'y' or 'z'
-
-      
-    
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-</section>
-
-      </div>
-    </div>
   
     <div class='border-bottom' id='cameracrewangleorthocam'>
       <div class="clearfix small pointer toggle-sibling">
