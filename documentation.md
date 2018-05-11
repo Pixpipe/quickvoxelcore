@@ -773,21 +773,21 @@ Set the Euler angle of the plane system
 
 ### setPosition
 
-Set the position of a given camera, by its id
-
-**Parameters**
-
--   `position` **[Object][131]** ={x:100, y:100, z:100} - position of the camera (optional, default `{x:undefined,y:undefined,z:undefined}`)
--   `cameraId` **[String][127]** the id of the camera
-
-### setPosition
-
 Update the position of the center of the \_planeSystem in world coordinates.
 Not each position property have to be updated.
 
 **Parameters**
 
 -   `position` **[Object][131]** The new position (optional, default `{x:undefined,y:undefined,z:undefined}`)
+
+### setPosition
+
+Set the position of a given camera, by its id
+
+**Parameters**
+
+-   `position` **[Object][131]** ={x:100, y:100, z:100} - position of the camera (optional, default `{x:undefined,y:undefined,z:undefined}`)
+-   `cameraId` **[String][127]** the id of the camera
 
 ### setTimeIndexSlotN
 
