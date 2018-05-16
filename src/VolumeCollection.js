@@ -6,7 +6,7 @@
 */
 
 
-import { UrlToArrayBufferReader, FileToArrayBufferReader, Image3DGenericDecoderAlt } from 'pixpipe/dist/pixpipe.esmodule.js'
+import { UrlToArrayBufferReader, FileToArrayBufferReader, Image3DGenericDecoder } from 'pixpipe/dist/pixpipe.esmodule.js'
 import { Volume } from './Volume.js'
 import { EventManager } from './EventManager.js'
 
@@ -112,7 +112,7 @@ class VolumeCollection extends EventManager {
 
     urlArrBuff.on("ready", function(){
       let arrBuff = this.getOutput()
-      let generic3DDecoder = new Image3DGenericDecoderAlt();
+      let generic3DDecoder = new Image3DGenericDecoder();
       generic3DDecoder.addInput( arrBuff )
       generic3DDecoder.update()
       let img3D = generic3DDecoder.getOutput()
@@ -143,7 +143,7 @@ class VolumeCollection extends EventManager {
 
     file2Buff.on("ready", function(){
       let arrBuff = this.getOutput()
-      let generic3DDecoder = new Image3DGenericDecoderAlt()
+      let generic3DDecoder = new Image3DGenericDecoder()
       generic3DDecoder.addInput( arrBuff )
       generic3DDecoder.update()
       let img3D = generic3DDecoder.getOutput()

@@ -22,7 +22,7 @@ import {
  */
 class Volume {
   /**
-   * [constructor description]
+   * Constructor
    */
   constructor (id, image3D) {
     this._id = id
