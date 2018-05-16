@@ -19,12 +19,13 @@ Since this project is a **core only**, it is not bound to any frontend framework
 A lot of additional methods to do more interesting things with *Quickvoxel* are implemented in the core and need to be tied to UI element to be fully usable. We'll see that in the following part.
 
 # Demo
-(Most of the demos are less than 20 lines)
+(Most of the demos are less than 30 lines)
 - [Simple with loading from URL](http://www.pixpipe.io/quickvoxelcore/examples/simple.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simple.html)
 - [Simple with loading from URL, with a loading spinner and events](http://www.pixpipe.io/quickvoxelcore/examples/simpleSpinner.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleSpinner.html)
 - [Simple with loading from a local file](http://www.pixpipe.io/quickvoxelcore/examples/simpleFile.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/simpleFile.html)
 - [Translate the plane](http://www.pixpipe.io/quickvoxelcore/examples/translate.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/translate.html)
 - [Oblique plane](http://www.pixpipe.io/quickvoxelcore/examples/oblique.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique.html)
+- [Show/hide axes](http://www.pixpipe.io/quickvoxelcore/examples/axes.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/axes.html)
 - [With colormaps](http://www.pixpipe.io/quickvoxelcore/examples/colormaps.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/colormaps.html)
 - [Oblique plane, animated](http://www.pixpipe.io/quickvoxelcore/examples/oblique2.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/oblique2.html)
 - [Two volumes + blending + colormap](http://www.pixpipe.io/quickvoxelcore/examples/double.html) - [source](https://github.com/Pixpipe/quickvoxelcore/blob/master/examples/double.html)
@@ -262,8 +263,6 @@ Here is a list of what you can do:
 
 # TODO
 In what is probably the order of future developments:
-- [ ] Add a link to source to each example
-- [ ] Add examples for multi camera usage
 - [ ] Masking capabilities (as a 3rd slot that has special features)
 - [ ] Raycasting capabilities, then we can get the position where the mouse pointer is hitting (and then the intensity in the volume, etc)
 - [ ] Try to build 3D textures without having to perform a conversion from float32 to uint8
@@ -278,3 +277,6 @@ In what is probably the order of future developments:
 - [x] Add a method to force the main (perspective) camera to follow the center of the plane system
 - [x] Add events for when a volume asked to be loaded so that UI can display a spinner or something
 - [x] Add anatomical names for camera ('sagittal', 'axial', 'coronal')
+- [x] Add a link to source to each example
+- [x] Add examples for multi camera usage
+- [x] Toggle axes

@@ -1,0 +1,85 @@
+<html>
+<head>
+  <title>Axes</title>
+  <link rel='stylesheet' href='css/main.css'/>
+</head>
+<body>
+  <div id="header">
+    <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
+    <div class="description">
+      The origin axes is always at (0,0,0) and point towards the positive direction with a length of 10mm. <code>Toggle</code><input id="toggleOriginAxes" type="checkbox" checked="true"><br />
+      The ortho-plane axes always follow the ortho plane and thus can rotate and translate. They go both ways and are much longer. <code>Toggle</code><input id="togglePlaneAxes" type="checkbox" checked="true"><br />
+      By default, the two set of axes are visible
+      &bull;
+      <a id="sourcelink" href="">source</a>
+    </div>
+  </div>
+
+  <!-- This one is not related to Quickvoxel, just to auto update the link to the Github source -->
+  <script src="js/addsourcelink.js"></script>
+
+  <!-- Loading Quickvoxel Core -->
+  <script src="../dist/quickvoxelcore.es6.js"></script>
+
+  <canvas id="renderCanvas"></canvas>
+
+  <script>
+    // test compatibility with WebGL2
+    if (!quickvoxelcore.webGL2()){
+      alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+    } else {
+      main()
+    }
+
+    function main () {
+      let canvas = document.getElementById("renderCanvas")
+      let toggleOriginAxesCheckbox = document.getElementById('toggleOriginAxes')
+      let togglePlaneAxesCheckbox = document.getElementById('togglePlaneAxes')
+
+      // the QuickvoxelCore instance is the entry point
+      let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+      // for future access to the volume collection
+      let volumeCollection = qvc.getVolumeCollection();
+      // for future access the render engine
+      let renderEngine = qvc.getRenderEngine();
+
+      let timeIndex = 0
+
+      // moving around
+      setInterval(function(){
+        let angle = Math.cos(timeIndex/100) * Math.PI/8
+        renderEngine.setPlaneSystemEulerAngle(angle, 0, 0)
+        timeIndex++
+      }, 10)
+
+      // moving around
+      setInterval(function(){
+        let pos = Math.cos(timeIndex/100)*60
+        renderEngine.setPosition({
+          x: pos
+        })
+      }, 10)
+
+      volumeCollection.addVolumeFromUrl( "../data/structural.nii.gz" );
+
+      // mount the volume when it's ready!
+      volumeCollection.on("volumeReady", function(volume){
+        let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+        if( !couldMount ){
+          console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+        }
+      })
+
+      toggleOriginAxesCheckbox.addEventListener('change', function(e){
+        renderEngine.showOriginAxes(e.target.checked)
+      })
+
+      togglePlaneAxesCheckbox.addEventListener('change', function(e){
+        renderEngine.showPlaneAxes(e.target.checked)
+      })
+    }
+
+  </script>
+
+</body>
+</html>

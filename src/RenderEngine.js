@@ -753,7 +753,7 @@ class RenderEngine extends EventManager {
    * The 3 axis are 10mm long and always cross at (0, 0, 0) no matter the position of the ortho planes.
    * @param  {Boolean}  b - true will show, false will hide
    */
-  showOriginAxis (b) {
+  showOriginAxes (b) {
     this._originAxis.setEnabled(b)
   }
 
@@ -763,7 +763,7 @@ class RenderEngine extends EventManager {
    * This set of 3 axis is always tied to the plane system and will translate and rotate with it.
    * @param  {Boolean}  b - true will show, false will hide
    */
-  showPlaneAxis (b) {
+  showPlaneAxes (b) {
     this._planeAxis.setEnabled(b)
   }
 
