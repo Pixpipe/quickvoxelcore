@@ -55,8 +55,11 @@ class RenderEngine extends EventManager {
 
     this._emptyTexture3D = this._initEmpty3dTexture()
     this._shaderMaterial = this._initShaderMaterial()
+    this._orthoPlaneList = [] // just a list that contains the plane meshes
     this._planeSystem = this._initOrthoPlaneSystem()
+    this._planeAxis = this._initPlaneAxis()
     this._originAxis = this._initOriginAxis()
+
 
     this._mountedVolumes = [
       null, // primary volume
@@ -236,6 +239,9 @@ class RenderEngine extends EventManager {
     yzPlane.material = this._shaderMaterial;
     yzPlane.computeWorldMatrix(true)
 
+    this._orthoPlaneList.push( xyPlane )
+    this._orthoPlaneList.push( xzPlane )
+    this._orthoPlaneList.push( yzPlane )
     return orthoPlaneSystem;
   }
 
@@ -550,7 +556,7 @@ class RenderEngine extends EventManager {
 
     let dotMax = 0
     let dominantVector = 0
-    let planes = this._planeSystem.getChildMeshes()
+    let planes = this._orthoPlaneList
 
     for (let i=0; i<planes.length; i++) {
       let n = planes[i].getFacetNormal(0)
@@ -743,13 +749,76 @@ class RenderEngine extends EventManager {
 
 
   /**
-   * Show of hide the axis that displays the origin
+   * Show of hide the axis that displays the origin.
+   * The 3 axis are 10mm long and always cross at (0, 0, 0) no matter the position of the ortho planes.
    * @param  {Boolean}  b - true will show, false will hide
    */
   showOriginAxis (b) {
     this._originAxis.setEnabled(b)
   }
 
+
+  /**
+   * Show of hide the axis at the intersection of the orthogonal plane system.
+   * This set of 3 axis is always tied to the plane system and will translate and rotate with it.
+   * @param  {Boolean}  b - true will show, false will hide
+   */
+  showPlaneAxis (b) {
+    this._planeAxis.setEnabled(b)
+  }
+
+
+  /**
+   * @private
+   * Adds the axis tied to the ortho plane system. Thos axis have different colors than
+   * the origin axis because they can rotate and no longer represent right/top/front
+   * @return {BABYLON.Mesh} the set of axis
+   */
+  _initPlaneAxis () {
+    let planeAxis = new BJSMesh( "planeAxis", this._scene )
+    planeAxis.parent = this._planeSystem
+    let tubeLength = 1000
+
+    let xCylinder = BJSMeshBuilder.CreateCylinder('xPlaneAxis',  {
+      height: tubeLength,
+      diameterTop: 0.5,
+      diameterBottom: 0.5,
+      tessellation: 32
+    }, this._scene)
+    xCylinder.rotation.z = Math.PI/2
+    //xCylinder.position.x = -tubeLength * 0.5
+    xCylinder.parent = planeAxis
+    let xAxisMaterial = new BJSStandardMaterial("xPlaneAxisMaterial", this._scene)
+    xAxisMaterial.emissiveColor = new BJSColor3(0.8, 0, 0.8)
+    xCylinder.material = xAxisMaterial
+
+    let yCylinder = BJSMeshBuilder.CreateCylinder('yPlaneAxis',  {
+      height: tubeLength,
+      diameterTop: 0.5,
+      diameterBottom: 0.5,
+      tessellation: 32
+    }, this._scene)
+    //yCylinder.position.y = tubeLength * 0.5
+    yCylinder.parent = planeAxis
+    let yAxisMaterial = new BJSStandardMaterial("yPlaneAxisMaterial", this._scene)
+    yAxisMaterial.emissiveColor = new BJSColor3(0.8, 0.8, 0)
+    yCylinder.material = yAxisMaterial
+
+    let zCylinder = BJSMeshBuilder.CreateCylinder('zPlaneAxis',  {
+      height: tubeLength,
+      diameterTop: 0.5,
+      diameterBottom: 0.5,
+      tessellation: 32
+    }, this._scene)
+    zCylinder.rotation.x = Math.PI/2
+    //zCylinder.position.z = tubeLength * 0.5
+    zCylinder.parent = planeAxis
+    let zAxisMaterial = new BJSStandardMaterial("zPlaneAxisMaterial", this._scene)
+    zAxisMaterial.emissiveColor = new BJSColor3(0, 0.8, 0.8)
+    zCylinder.material = zAxisMaterial
+
+    return planeAxis
+  }
 
 }
 
