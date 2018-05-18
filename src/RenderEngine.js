@@ -11,7 +11,6 @@ import {
   Engine as BJSEngine,
   Scene as BJSScene,
   Color3 as BJSColor3,
-  ArcRotateCamera as BJSArcRotateCamera,
   Vector3 as BJSVector3,
   RawTexture3D as BJSRawTexture3D,
   ShaderMaterial as BJSShaderMaterial,
@@ -55,15 +54,26 @@ class RenderEngine extends EventManager {
 
     this._emptyTexture3D = this._initEmpty3dTexture()
     this._shaderMaterial = this._initShaderMaterial()
-    this._orthoPlaneList = [] // just a list that contains the plane meshes
-    this._planeSystem = this._initOrthoPlaneSystem()
+    this._rotarySystem =  null
+    this._orthoPlanes = null
+    this._initRotarySystem()
     this._planeAxis = this._initPlaneAxis()
     this._originAxis = this._initOriginAxis()
-
 
     this._mountedVolumes = [
       null, // primary volume
       null  // secondary volume
+    ]
+
+    // tells if a volume is visible or not. For internal cooking when using a raycasting
+    this._visibleVolumes = [
+      true, // primary volume
+      true  // secondary volume
+    ]
+
+    this._volumeTimeVal = [
+      0, // primary volume
+      0  // secondary volume
     ]
 
     this._engine.runRenderLoop(function () {
@@ -76,27 +86,6 @@ class RenderEngine extends EventManager {
   }
 
 
-  /**
-   * @private
-   * Initialize the default (main) camera. The main camera is a regular perspective cemera (aka. not ortho)
-   */
-  _initMainCamera () {
-    let mainCam = new BJSArcRotateCamera("main", Math.PI / 2, Math.PI / 2, 2, BJSVector3.Zero(), this._scene);
-    mainCam.inertia = 0.7;
-    mainCam.setPosition( new BJSVector3(300, 0, 0) )
-    mainCam.attachControl( this._canvas, true, true );
-    mainCam.upperBetaLimit = null;
-    mainCam.lowerBetaLimit = null;
-
-    // remove the pole lock
-    this._scene.registerBeforeRender(function(){
-      if(mainCam.beta <= 0){
-        mainCam.beta += Math.PI * 2;
-      }
-    });
-
-    return mainCam;
-  }
 
   /**
    * @private
@@ -199,9 +188,12 @@ class RenderEngine extends EventManager {
    * Design a plane system composed of 3 orthogonal planes, each of them being 1000x1000
    * @return {[type]} [description]
    */
-  _initOrthoPlaneSystem () {
-    let orthoPlaneSystem = new BJSMesh( "orthoPlaneSystem", this._scene );
-    orthoPlaneSystem.rotationQuaternion = BJSQuaternion.Identity()
+  _initRotarySystem () {
+    this._rotarySystem =  new BJSMesh( "rotarySystem", this._scene )
+
+    this._orthoPlanes = new BJSMesh( "orthoPlanes", this._scene )
+    this._orthoPlanes.parent = this._rotarySystem
+    this._orthoPlanes.rotationQuaternion = BJSQuaternion.Identity()
 
     let xyPlane = BJSMeshBuilder.CreatePlane(
       "xy",
@@ -211,7 +203,7 @@ class RenderEngine extends EventManager {
         sideOrientation: BJSMesh.DOUBLESIDE
       }, this._scene);
     xyPlane.rotation.x = Math.PI; // just so that the first normal goes to the positive direction
-    xyPlane.parent = orthoPlaneSystem;
+    xyPlane.parent = this._orthoPlanes
     xyPlane.material = this._shaderMaterial
     xyPlane.computeWorldMatrix(true)
 
@@ -223,7 +215,7 @@ class RenderEngine extends EventManager {
         sideOrientation: BJSMesh.DOUBLESIDE
       }, this._scene);
     xzPlane.rotation.x = Math.PI/2;
-    xzPlane.parent = orthoPlaneSystem;
+    xzPlane.parent = this._orthoPlanes
     xzPlane.material = this._shaderMaterial;
     xzPlane.computeWorldMatrix(true)
 
@@ -235,51 +227,31 @@ class RenderEngine extends EventManager {
         sideOrientation: BJSMesh.DOUBLESIDE
       }, this._scene);
     yzPlane.rotation.y = -Math.PI/2;
-    yzPlane.parent = orthoPlaneSystem;
+    yzPlane.parent = this._orthoPlanes
     yzPlane.material = this._shaderMaterial;
     yzPlane.computeWorldMatrix(true)
-
-    this._orthoPlaneList.push( xyPlane )
-    this._orthoPlaneList.push( xzPlane )
-    this._orthoPlaneList.push( yzPlane )
-    return orthoPlaneSystem;
   }
 
 
   /**
-   * Set the position of a given camera, by its id
-   * @param {String} cameraId - the id of the camera
-   * @param {Object} position={x:100, y:100, z:100} - position of the camera
-   */
-  /*
-  setCameraPosition ( cameraId, position={x:100, y:100, z:100}) {
-    if( cameraId in this._cameras ){
-      this._cameras[ cameraId ].setPosition( new BJSVector3(position.x, position.y, position.z) );
-    }else{
-      console.warn(`Camera with the id ${cameraId} does not exist`);
-    }
-  }
-  */
-
-  /**
-   * Update the position of the center of the _planeSystem in world coordinates.
+   * Update the position of the center of the _rotarySystem in world coordinates.
    * Not each position property have to be updated.
    * @param  {Object} [position={x:undefined, y:undefined, z:undefined}] - The new position
    */
   setPosition (position={x:undefined, y:undefined, z:undefined}) {
     if (position.x !== undefined) {
-      this._planeSystem.position.x = position.x;
+      this._rotarySystem.position.x = position.x;
     }
 
     if (position.y !== undefined) {
-      this._planeSystem.position.y = position.y;
+      this._rotarySystem.position.y = position.y;
     }
 
     if (position.z !== undefined) {
-      this._planeSystem.position.z = position.z;
+      this._rotarySystem.position.z = position.z;
     }
 
-    this.emit('translate', [this._planeSystem.position.clone()])
+    this.emit('translate', [this._rotarySystem.position.clone()])
   }
 
 
@@ -288,17 +260,17 @@ class RenderEngine extends EventManager {
    * @return {BABYLON.Vector3} position
    */
   getPosition () {
-    return this._planeSystem.position.clone()
+    return this._rotarySystem.position.clone()
   }
 
 
   /**
-   * Reset the rotation of the _planeSystem
+   * Reset the rotation of the _rotarySystem
    */
   resetPosition () {
-    this._planeSystem.position.x = 0;
-    this._planeSystem.position.y = 0;
-    this._planeSystem.position.z = 0;
+    this._rotarySystem.position.x = 0;
+    this._rotarySystem.position.y = 0;
+    this._rotarySystem.position.z = 0;
   }
 
 
@@ -492,6 +464,7 @@ class RenderEngine extends EventManager {
   displayVolumeSlotN (n, d=true) {
     if( n>=0 && n < this._mountedVolumes.length ){
       this._shaderMaterial.setInt( "vol_" + n + "_display", +d )
+      this._visibleVolumes[n] = d
     } else {
       console.warn('the index of the slot is out of range.')
     }
@@ -508,6 +481,7 @@ class RenderEngine extends EventManager {
     if( n>=0 && n < this._mountedVolumes.length ){
       let timeMax = this._mountedVolumes[n].getTimeLength()
       this._shaderMaterial.setInt( "vol_" + n + "_timeVal", t%timeMax )
+      this._volumeTimeVal[n] = t
     } else {
       console.warn('the index of the slot is out of range.')
     }
@@ -556,7 +530,7 @@ class RenderEngine extends EventManager {
 
     let dotMax = 0
     let dominantVector = 0
-    let planes = this._orthoPlaneList
+    let planes = this._orthoPlanes.getChildren()
 
     for (let i=0; i<planes.length; i++) {
       let n = planes[i].getFacetNormal(0)
@@ -573,7 +547,7 @@ class RenderEngine extends EventManager {
 
 
   /**
-   * Get the the one of the 3 normal vectors of the _planeSystem that goes
+   * Get the the one of the 3 normal vectors of the _rotarySystem that goes
    * dominantly towards the X direction
    * (Here "dominantly" is deducted by performing a dot product with [!, 0, 0])
    * @return {BABYLON.Vector3} the normal vector (as a clone)
@@ -584,7 +558,7 @@ class RenderEngine extends EventManager {
 
 
   /**
-   * Get the the one of the 3 normal vectors of the _planeSystem that goes
+   * Get the the one of the 3 normal vectors of the _rotarySystem that goes
    * dominantly towards the Y direction
    * * (Here "dominantly" is deducted by performing a dot product with [0, 1, 0])
    * @return {BABYLON.Vector3} the normal vector (as a clone)
@@ -595,7 +569,7 @@ class RenderEngine extends EventManager {
 
 
   /**
-   * Get the the one of the 3 normal vectors of the _planeSystem that goes
+   * Get the the one of the 3 normal vectors of the _rotarySystem that goes
    * dominantly towards the Z direction.
    * (Here "dominantly" is deducted by performing a dot product with [0, 0, 1])
    * @return {BABYLON.Vector3} the normal vector (as a clone)
@@ -612,9 +586,9 @@ class RenderEngine extends EventManager {
    */
   rotateAroundXDominant (angle) {
     let axis = this.getXDominantPlaneNormal()
-    let center = this._planeSystem.position
-    this._planeSystem.rotateAround( center, axis, angle )
-    this.emit('rotate', [this._planeSystem.rotationQuaternion, axis, angle])
+    let center = this._rotarySystem.position
+    this._rotarySystem.rotateAround( center, axis, angle )
+    this.emit('rotate', [this._rotarySystem.rotationQuaternion, axis, angle])
   }
 
 
@@ -625,9 +599,9 @@ class RenderEngine extends EventManager {
    */
   rotateAroundYDominant (angle) {
     let axis = this.getYDominantPlaneNormal()
-    let center = this._planeSystem.position
-    this._planeSystem.rotateAround( center, axis, angle )
-    this.emit('rotate', [this._planeSystem.rotationQuaternion, axis, angle])
+    let center = this._rotarySystem.position
+    this._rotarySystem.rotateAround( center, axis, angle )
+    this.emit('rotate', [this._rotarySystem.rotationQuaternion, axis, angle])
   }
 
 
@@ -638,9 +612,9 @@ class RenderEngine extends EventManager {
    */
   rotateAroundZDominant (angle) {
     let axis = this.getZDominantPlaneNormal()
-    let center = this._planeSystem.position
-    this._planeSystem.rotateAround( center, axis, angle )
-    this.emit('rotate', [this._planeSystem.rotationQuaternion, axis, angle])
+    let center = this._rotarySystem.position
+    this._rotarySystem.rotateAround( center, axis, angle )
+    this.emit('rotate', [this._rotarySystem.rotationQuaternion, axis, angle])
   }
 
 
@@ -651,8 +625,8 @@ class RenderEngine extends EventManager {
   translateAlongXDominant (d) {
     let dominantVector = this.getXDominantPlaneNormal()
     let translation = dominantVector.multiplyByFloats( d, d, d  )
-    this._planeSystem.position.addInPlace( translation )
-    this.emit('translate', [this._planeSystem.position.clone()])
+    this._rotarySystem.position.addInPlace( translation )
+    this.emit('translate', [this._rotarySystem.position.clone()])
   }
 
   /**
@@ -662,8 +636,8 @@ class RenderEngine extends EventManager {
   translateAlongYDominant (d) {
     let dominantVector = this.getYDominantPlaneNormal()
     let translation = dominantVector.multiplyByFloats( d, d, d  )
-    this._planeSystem.position.addInPlace( translation )
-    this.emit('translate', [this._planeSystem.position.clone()])
+    this._rotarySystem.position.addInPlace( translation )
+    this.emit('translate', [this._rotarySystem.position.clone()])
   }
 
 
@@ -674,8 +648,8 @@ class RenderEngine extends EventManager {
   translateAlongZDominant (d) {
     let dominantVector = this.getZDominantPlaneNormal()
     let translation = dominantVector.multiplyByFloats( d, d, d )
-    this._planeSystem.position.addInPlace( translation )
-    this.emit('translate', [this._planeSystem.position.clone()])
+    this._rotarySystem.position.addInPlace( translation )
+    this.emit('translate', [this._rotarySystem.position.clone()])
   }
 
 
@@ -684,7 +658,7 @@ class RenderEngine extends EventManager {
    * @return {BABYLON.Vector3} The Euler angle
    */
   getPlaneSystemEulerAngle () {
-    let eulerAngle = this._planeSystem.rotationQuaternion.toEulerAngles()
+    let eulerAngle = this._rotarySystem.rotationQuaternion.toEulerAngles()
     return eulerAngle
   }
 
@@ -697,8 +671,8 @@ class RenderEngine extends EventManager {
    */
   setPlaneSystemEulerAngle (x, y, z) {
     let newQuat = BJSQuaternion.RotationYawPitchRoll(y, x, z)
-    this._planeSystem.rotationQuaternion = newQuat
-    this.emit('rotate', [this._planeSystem.rotationQuaternion, null, null]) // here, 'dominantAxis' is null because it can be arbitrary
+    this._rotarySystem.rotationQuaternion = newQuat
+    this.emit('rotate', [this._rotarySystem.rotationQuaternion, null, null]) // here, 'dominantAxis' is null because it can be arbitrary
   }
 
 
@@ -776,7 +750,7 @@ class RenderEngine extends EventManager {
    */
   _initPlaneAxis () {
     let planeAxis = new BJSMesh( "planeAxis", this._scene )
-    planeAxis.parent = this._planeSystem
+    planeAxis.parent = this._rotarySystem
     let tubeLength = 1000
 
     let xCylinder = BJSMeshBuilder.CreateCylinder('xPlaneAxis',  {
@@ -819,6 +793,55 @@ class RenderEngine extends EventManager {
 
     return planeAxis
   }
+
+
+  /**
+   * @private
+   * Not really private but of no interest people
+   * Get the name of the mesh that carries the ortho planes. This is supposed to
+   * be use from CameraCrew
+   * @return {String} the name
+   */
+  getOrthoPlanesMeshName () {
+    return this._orthoPlanes.name
+  }
+
+
+  /**
+   * Get the value at the given position
+   * @param  {[type]} n         [description]
+   * @param  {[type]} point     [description]
+   * @param  {Number} [time=-1] [description]
+   * @return {[type]}           [description]
+   */
+  getValueAtSlotN (n, point, time=-1) {
+    if (n>=0 && n < this._mountedVolumes.length) {
+      if (this._mountedVolumes[n] && this._visibleVolumes[n]) {
+        let t = 0
+        if (time === -1) {
+          t = this._volumeTimeVal[n]
+        } else if (time>0 && time< this._mountedVolumes[n].getTimeLength()) {
+          t = time
+        } else {
+          console.warn("The time asked is out of the volume time range.")
+          return null
+        }
+
+        return {
+          position: point,
+          time: t,
+          value: this._mountedVolumes[n].getValue(point, t)
+        }
+
+      } else {
+        console.warn("The volume on slot " + n + " is not loaded or not displayed.")
+      }
+    } else {
+      console.warn('the index of the slot is out of range.')
+    }
+    return null
+  }
+
 
 }
 

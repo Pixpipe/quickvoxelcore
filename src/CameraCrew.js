@@ -15,7 +15,8 @@ import {
   FreeCamera as BJSFreeCamera,
   Vector3 as BJSVector3,
   Matrix as BJSMatrix,
-  Quaternion as BJSQuaternion
+  Quaternion as BJSQuaternion,
+  PointerEventTypes as BJSPointerEventTypes
 } from 'babylonjs/es6.js'
 
 import { EventManager } from './EventManager.js'
@@ -56,7 +57,6 @@ class CameraCrew extends EventManager {
     this._renderEngine = renderEngine
     this._scene = renderEngine.getScene()
     this._canvas = canvasElem
-    this._planeSystem = this._scene.getMeshByName('orthoPlaneSystem')
     this._isSingleView = true
     this._currentCam = null
 
@@ -166,6 +166,50 @@ class CameraCrew extends EventManager {
     this._renderEngine.on('translate', function(newPosition){
       that._cameras[ that._perspectiveCamName ].setTarget(newPosition)
     })
+
+
+    this._scene.onPointerObservable.add( function (evt) {
+      var results = that._scene.multiPick(that._scene.unTranslatedPointer.x, that._scene.unTranslatedPointer.y);
+      console.log(results[0].pickedPoint);
+      let orthoplaneMeshName = that._renderEngine.getOrthoPlanesMeshName()
+
+      // keeping only the coords of the hits on the planes (discards hits on the axis)
+      let candidatePoints = results.filter(function(pickingInfo){
+        return (pickingInfo.pickedMesh.parent.name === orthoplaneMeshName)
+      }).map(function(pickingInfo){
+        return pickingInfo.pickedPoint
+      })
+
+      let valueBySlot = [null, null]
+
+      // per slot
+      for (let s=0; s<valueBySlot.length; s++) {
+        // per raycast hit
+        for (let i=0; i<candidatePoints.length; i++) {
+          // also, fixes the xz invesion
+          //let xReversedPosition = {
+          //  x: Math.round(-candidatePoints[i].x),
+          //  y: Math.round(candidatePoints[i].y),
+          //  z: Math.round(candidatePoints[i].z)
+          //}
+          let xReversedPosition = {
+            x: Math.round(candidatePoints[i].z),
+            y: Math.round(candidatePoints[i].y),
+            z: Math.round(-candidatePoints[i].x)
+          }
+
+          valueBySlot[s] = that._renderEngine.getValueAtSlotN(s, xReversedPosition)
+          if (valueBySlot[s])
+            break
+        }
+      }
+
+
+      // TODO: the picking from babylon does not give correct coords, y is ok bu z and x are inverted
+      // TODO 2 : en fait les coord du raycaster c'est nimporte quoi
+
+      console.log( valueBySlot[0].position, valueBySlot[0].value  )
+    }, BJSPointerEventTypes.POINTERDOUBLETAP)
   }
 
 
@@ -197,17 +241,22 @@ class CameraCrew extends EventManager {
     mainCam.attachControl( this._canvas, true, false )
     mainCam.upperBetaLimit = null
     mainCam.lowerBetaLimit = null
-    mainCam.panningSensibility﻿ = 30;
+    //mainCam.panningSensibility﻿ = 30;
 
-    // remove the pole lock
+    /*
+    // removes the change of rotation direction when going thru the pole (y)
+    // but also rotates in the opposite direction when upside down, making it
+    // hard to use.
     this._scene.registerBeforeRender(function(){
       if(mainCam.beta <= 0){
         mainCam.beta += Math.PI * 2
       }
     });
+    */
 
     return mainCam
   }
+
 
 
   /**
