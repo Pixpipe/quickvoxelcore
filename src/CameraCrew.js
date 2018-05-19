@@ -16,7 +16,8 @@ import {
   Vector3 as BJSVector3,
   Matrix as BJSMatrix,
   Quaternion as BJSQuaternion,
-  PointerEventTypes as BJSPointerEventTypes
+  PointerEventTypes as BJSPointerEventTypes,
+  Viewport as BJSViewport
 } from 'babylonjs/es6.js'
 
 import { EventManager } from './EventManager.js'
@@ -169,7 +170,9 @@ class CameraCrew extends EventManager {
 
 
     this._scene.onPointerObservable.add( function (evt) {
+
       var results = that._scene.multiPick(that._scene.unTranslatedPointer.x, that._scene.unTranslatedPointer.y);
+      console.log(results);
       console.log(results[0].pickedPoint);
       let orthoplaneMeshName = that._renderEngine.getOrthoPlanesMeshName()
 
@@ -187,15 +190,10 @@ class CameraCrew extends EventManager {
         // per raycast hit
         for (let i=0; i<candidatePoints.length; i++) {
           // also, fixes the xz invesion
-          //let xReversedPosition = {
-          //  x: Math.round(-candidatePoints[i].x),
-          //  y: Math.round(candidatePoints[i].y),
-          //  z: Math.round(candidatePoints[i].z)
-          //}
           let xReversedPosition = {
-            x: Math.round(candidatePoints[i].z),
-            y: Math.round(candidatePoints[i].y),
-            z: Math.round(-candidatePoints[i].x)
+            x: -candidatePoints[i].x,
+            y: candidatePoints[i].y,
+            z: candidatePoints[i].z
           }
 
           valueBySlot[s] = that._renderEngine.getValueAtSlotN(s, xReversedPosition)
@@ -207,6 +205,10 @@ class CameraCrew extends EventManager {
 
       // TODO: the picking from babylon does not give correct coords, y is ok bu z and x are inverted
       // TODO 2 : en fait les coord du raycaster c'est nimporte quoi
+      // Concerning Ortho cams:
+      // - axial: OK! (just x is reversed due to opengl conventions)
+      // - coronal: OK! (just x is reversed due to opengl conventions)
+      // - sagittal: OK! (just x is reversed due to opengl conventions)
 
       console.log( valueBySlot[0].position, valueBySlot[0].value  )
     }, BJSPointerEventTypes.POINTERDOUBLETAP)
@@ -818,6 +820,20 @@ class CameraCrew extends EventManager {
    */
   isUsingOrthoCam () {
     return ((this._currentCam !== this._perspectiveCamName) && this._isSingleView)
+  }
+
+
+  enableMulticam () {
+    this._scene.activeCameras.push(this._cameras[this._perspectiveCamName])
+    this._scene.activeCameras.push(this._cameras["aOrtho"])
+    this._scene.activeCameras.push(this._cameras["bOrtho"])
+    this._scene.activeCameras.push(this._cameras["cOrtho"])
+
+    this._cameras[this._perspectiveCamName].viewport = new BJSViewport(0, 0, 0.5, 0.5) // nw
+    this._cameras["aOrtho"].viewport = new BJSViewport(0.5, 0, 0.5, 0.5) // ne
+    this._cameras["bOrtho"].viewport = new BJSViewport(0, 0.5, 0.5, 0.5) // sw
+    this._cameras["cOrtho"].viewport = new BJSViewport(0.5, 0.5, 0.5, 0.5) //se
+
   }
 }
 

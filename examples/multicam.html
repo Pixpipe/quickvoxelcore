@@ -1,0 +1,63 @@
+<html>
+<head>
+  <title>Simple</title>
+  <link rel='stylesheet' href='css/main.css'/>
+</head>
+<body>
+  <div id="header">
+    <a href="https://github.com/Pixpipe/quickvoxelcore"><img src='../assets/images/qv_logo_horizontal.png'/></a>
+    <div class="description">
+      This example loads a MRI from a NIfTI file with the method <code>.addVolumeFromUrl()</code>, decodes it with Pixpipe and displays it as a registered 3D texture in subject coordinates.<br />
+      The 3 color axis show the origin <bold>(0, 0, 0)</bold>. Axis length are 10mm, the green, blue and red axis respectivelly points toward +x, +y and +z in MNI space (or Talairach coordinates)
+      &bull;
+      <a id="sourcelink" href="">source</a>
+    </div>
+  </div>
+
+  <!-- This one is not related to Quickvoxel, just to auto update the link to the Github source -->
+  <script src="js/addsourcelink.js"></script>
+
+  <!-- Loading Quickvoxel Core -->
+  <script src="../dist/quickvoxelcore.es6.js"></script>
+
+  <canvas id="renderCanvas"></canvas>
+
+  <script>
+
+    // test compatibility with WebGL2
+    if (!quickvoxelcore.webGL2()){
+      alert( 'Quickvoxel Core cannot run here because this web browser is not compatible with WebGL2.' )
+    } else {
+      main()
+    }
+
+
+  function main () {
+    let canvas = document.getElementById("renderCanvas")
+
+    // the QuickvoxelCore instance is the entry point
+    let qvc = new quickvoxelcore.QuickvoxelCore( canvas );
+    // for future access to the volume collection
+    let volumeCollection = qvc.getVolumeCollection();
+    // for future access the render engine
+    let renderEngine = qvc.getRenderEngine();
+    // To modify camera settings
+    let camcrew = qvc.getCameraCrew()
+    camcrew.enableMulticam()
+
+
+    volumeCollection.addVolumeFromUrl( "../data/structural.nii.gz" );
+
+    // mount the volume when it's ready!
+    volumeCollection.on("volumeReady", function(volume){
+      let couldMount = renderEngine.mountVolumeOnFirstEmptySlot( volume )
+      if( !couldMount ){
+        console.log("All volume slots are taken on the render engine, make some space before rendering this volume.");
+      }
+    })
+  }
+
+  </script>
+
+</body>
+</html>
