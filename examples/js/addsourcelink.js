@@ -5,6 +5,10 @@ let basename = filenameSplit[filenameSplit.length-1]
 
 sourcelinkEl.href = repoBaseUrl + basename
 
+
+// evaluate boolean
+function bool(v){ return v==="false" || v==="null" || v==="NaN" || v==="undefined" || v==="0" ? false : !!v; }
+
 // hides the header with a GET argument (convenient for iframed demos)
 var url = new URL(window.location.href)
 var hideheader = bool(url.searchParams.get("hideheader"))
