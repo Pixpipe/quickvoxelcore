@@ -114,19 +114,29 @@ class Volume {
     let dimI = this._image3D.getDimensionSize("i");
     let dimT = this._image3D.getTimeLength();
 
+    let ui8Arr = this._image3D.getDataUint8()
+    let r32fArr = new Float32Array( ui8Arr.length )
+
+    for (let i=0; i<ui8Arr.length; i++) {
+      r32fArr[i] = ui8Arr[i] / 256.
+    }
+
     this._texture3D = new BJSRawTexture3D(
-      this._image3D.getDataUint8(),
+      r32fArr,//this._image3D.getDataUint8(),
       dimK ,
       dimJ ,
       dimI * dimT,
-      BJSEngine.TEXTUREFORMAT_LUMINANCE,
+      BJSEngine.TEXTUREFORMAT_R32F, //BJSEngine.TEXTUREFORMAT_LUMINANCE,
       bjsScene,
       false, // generate mipmaps
       false, // invertY
       //BJSTexture.NEAREST_SAMPLINGMODE
       BJSTexture.TRILINEAR_SAMPLINGMODE
     )
+
+    console.log( this._texture3D )
   }
+
 
 
   /**

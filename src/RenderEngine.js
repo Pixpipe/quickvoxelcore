@@ -93,7 +93,8 @@ class RenderEngine extends EventManager {
    * @return {[type]} [description]
    */
   _initEmpty3dTexture () {
-    return new BJSRawTexture3D( new Uint8Array(1),1,1,1, BJSEngine.TEXTUREFORMAT_LUMINANCE, this._scene);
+    //return new BJSRawTexture3D( new Uint8Array(1),1,1,1, BJSEngine.TEXTUREFORMAT_LUMINANCE, this._scene);
+    return new BJSRawTexture3D( new Float32Array(1),1,1,1, BJSEngine.TEXTUREFORMAT_R32F, this._scene);
   }
 
 
@@ -459,6 +460,7 @@ class RenderEngine extends EventManager {
 
   /**
    * Display of hide the volume hosted on the Nth slot
+   * @param {Number} n - the index of the slot
    * @param  {Boolean} [d=true] - display is true, hide if false
    */
   displayVolumeSlotN (n, d=true) {
